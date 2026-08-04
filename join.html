@@ -22,11 +22,12 @@
 <main id="main" class="checkout">
   <div class="checkout__inner">
 
-    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Signup progress" data-progress>
+    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="2" aria-valuenow="1" aria-label="Signup progress" data-progress>
       <span class="progress__seg is-done" data-seg="1"></span>
       <span class="progress__seg" data-seg="2"></span>
-      <span class="progress__seg" data-seg="3"></span>
     </div>
+
+    <p class="form-notice" id="cancelled-notice" hidden>Checkout cancelled — no charge was made. Ready when you are.</p>
 
     <form novalidate data-join-form>
 
@@ -56,63 +57,26 @@
             </div>
           </div>
 
-          <div class="form__actions">
-            <button type="button" class="btn btn--lg btn--block" data-next="1">Continue</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- STEP 2 — Payment -->
-      <section class="step-panel" id="step-2" data-step="2" hidden>
-        <h1 class="step-panel__title" tabindex="-1">Payment</h1>
-        <p class="step-panel__note">Charged automatically, every month. Cancel anytime.</p>
-
-        <div class="form">
           <div class="amount">
             <span class="amount__label">Your monthly contribution</span>
             <span class="amount__value">$1 <small>/month</small></span>
           </div>
 
-          <div class="field-group">
-            <div class="input-wrap">
-              <input class="input" type="text" id="cardNumber" name="cardNumber" placeholder=" " inputmode="numeric" autocomplete="cc-number" maxlength="19" required>
-              <label class="input-label" for="cardNumber">Card number</label>
-              <span class="error" id="err-cardNumber" role="alert"></span>
-            </div>
-            <div class="field-row">
-              <div class="input-wrap">
-                <input class="input" type="text" id="cardExpiry" name="cardExpiry" placeholder=" " inputmode="numeric" autocomplete="cc-exp" maxlength="5" required>
-                <label class="input-label" for="cardExpiry">MM / YY</label>
-                <span class="error" id="err-cardExpiry" role="alert"></span>
-              </div>
-              <div class="input-wrap">
-                <input class="input" type="text" id="cardCvc" name="cardCvc" placeholder=" " inputmode="numeric" autocomplete="cc-csc" maxlength="4" required>
-                <label class="input-label" for="cardCvc">CVC</label>
-                <span class="error" id="err-cardCvc" role="alert"></span>
-              </div>
-            </div>
-          </div>
-
           <div class="form__actions">
-            <button type="button" class="btn btn--lg btn--block" data-submit>Join — $1/month</button>
+            <button type="button" class="btn btn--lg btn--block" data-next="1">Continue to payment</button>
           </div>
-          <p class="fine">By joining, you agree to a recurring charge of $1 every month until you cancel.</p>
-          <div style="text-align:center">
-            <button type="button" class="back-link" data-back="2">&larr; Back</button>
-          </div>
+          <p class="fine">You&rsquo;ll enter payment details on Stripe&rsquo;s secure checkout, including Apple Pay where available. Cancel anytime.</p>
         </div>
       </section>
 
-      <!-- STEP 3 — Confirmation -->
-      <section class="step-panel confirm" id="step-3" data-step="3" hidden>
-        <svg class="confirm__mark" viewBox="0 0 60 60" fill="none" aria-hidden="true">
-          <circle cx="30" cy="30" r="26" stroke="currentColor" stroke-width="2.5"/>
-          <path d="M19 31l7 7 15-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <h1 class="confirm__title" tabindex="-1">You&rsquo;re in.</h1>
-        <p class="confirm__note">Thank you for joining the $1/month movement, <span data-confirm-name>friend</span>.</p>
-        <div class="confirm__actions">
-          <a class="btn btn--lg" href="index.html">Back to home</a>
+      <!-- STEP 2 — Redirecting to Stripe Checkout -->
+      <section class="step-panel confirm" id="step-2" data-step="2" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <h1 class="step-panel__title" tabindex="-1" data-redirect-title>Taking you to checkout&hellip;</h1>
+        <p class="step-panel__note" data-redirect-note>You&rsquo;ll pay $1 for this month, then $1 every month after &mdash; securely, on Stripe.</p>
+        <p class="error" id="err-redirect" role="alert" style="text-align:center;margin-top:1.5rem"></p>
+        <div class="confirm__actions" id="redirect-actions" hidden>
+          <button type="button" class="btn btn--lg" data-back="2">&larr; Back to details</button>
         </div>
       </section>
 
@@ -120,7 +84,8 @@
   </div>
 </main>
 
+<script>window.ITSADOLLAR_API_BASE = "http://localhost:4242";</script>
 <script src="assets/js/site.js" defer></script>
-<script src="assets/js/join.js" defer></script>
+<script src="assets/js/checkout.js" defer></script>
 </body>
 </html>

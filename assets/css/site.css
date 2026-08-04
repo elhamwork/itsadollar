@@ -1162,6 +1162,32 @@ body.is-locked {
   opacity: 0.72;
 }
 
+.form-notice {
+  margin-bottom: 2rem;
+  padding: 0.875rem 1.125rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  color: var(--ink-quiet);
+  text-align: center;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto clamp(2rem, 5vh, 2.75rem);
+  border: 2.5px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .confirm {
   text-align: center;
 }
