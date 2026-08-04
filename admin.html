@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — It's a Dollar</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 font-family=%22system-ui%22 font-weight=%22700%22>$</text></svg>">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body class="no-js">
+
+<header class="checkout-header">
+  <div class="shell header__inner">
+    <a class="brand" href="index.html">It's a Dollar</a>
+    <span class="eyebrow">Admin</span>
+  </div>
+</header>
+
+<main id="main" class="admin">
+  <div class="shell admin__shell">
+
+    <section class="admin-login" id="admin-login">
+      <h1 class="step-panel__title" tabindex="-1">Admin</h1>
+      <p class="step-panel__note">This page manages voting cycles and donation records. It is not linked from the site.</p>
+      <form class="form" id="login-form">
+        <div class="field-group">
+          <div class="input-wrap">
+            <input class="input" type="password" id="admin-password" placeholder=" " autocomplete="current-password" required>
+            <label class="input-label" for="admin-password">Password</label>
+            <span class="error" id="login-error" role="alert"></span>
+          </div>
+        </div>
+        <div class="form__actions">
+          <button type="submit" class="btn btn--lg btn--block">Log in</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="admin-dashboard" id="admin-dashboard" hidden>
+      <div class="admin-dashboard__head">
+        <h1 class="step-panel__title" tabindex="-1">Cycles</h1>
+        <button type="button" class="link" id="logout-btn">Log out</button>
+      </div>
+
+      <div class="admin-panel" id="open-cycle-panel">
+        <!-- Filled by admin.js: either the "create a cycle" form, or the current open cycle's causes + a close-cycle form -->
+      </div>
+
+      <h2 class="title admin__subhead">Past cycles</h2>
+      <div id="past-cycles"></div>
+    </section>
+
+  </div>
+</main>
+
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/admin.js" defer></script>
+</body>
+</html>

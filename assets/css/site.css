@@ -1235,6 +1235,131 @@ body.is-locked {
   margin-top: clamp(2.5rem, 6vh, 3.5rem);
 }
 
+.confirm__share {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.share-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.share-row .input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--ink-quiet);
+}
+
+.share-row .btn {
+  flex: none;
+  min-height: 56px;
+}
+
+/* ---------- Vote causes -------------------------------------------------- */
+
+.cause-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+.cause-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+
+.cause-option:hover {
+  border-color: rgba(0, 0, 0, 0.28);
+}
+
+.cause-option.is-selected {
+  border-color: var(--ink);
+  background: var(--parchment);
+}
+
+.cause-option__name {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.cause-option__desc {
+  font-size: 0.875rem;
+  color: var(--ink-quiet);
+}
+
+/* ---------- Donations / proof list --------------------------------------- */
+
+.donation-list {
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+  border-top: 1px solid var(--line);
+}
+
+.donation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.donation-row__when {
+  flex: none;
+  width: 9ch;
+  font-size: 0.8125rem;
+  color: var(--ink-quiet);
+}
+
+.donation-row__what {
+  flex: 1;
+  min-width: 200px;
+  font-weight: 500;
+}
+
+/* ---------- Admin --------------------------------------------------------- */
+
+.admin__shell {
+  padding-block: calc(var(--header-h) + clamp(3rem, 8vh, 5rem)) 6rem;
+  max-width: 640px;
+}
+
+.admin__subhead {
+  margin-top: clamp(3rem, 6vw, 4rem);
+}
+
+.admin-dashboard__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-panel {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.admin-past-row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
 /* ---------- Reveal ------------------------------------------------------ */
 
 .reveal {

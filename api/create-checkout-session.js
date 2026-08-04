@@ -1,9 +1,29 @@
 const Stripe = require("stripe");
 
+const BILLING_DAY = 15;
+const BILLING_HOUR_UTC = 15; // Anchor time; the vote-email cron runs an hour after this.
+
 function getBaseUrl(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   return `${proto}://${host}`;
+}
+
+// Everyone's renewal charge lands on the 15th, no matter when they joined.
+// The very first charge happens immediately (today, in full — no proration),
+// then the subscription's billing_cycle_anchor snaps every charge after
+// that to the 15th.
+function nextBillingAnchor() {
+  const now = new Date();
+  let anchor = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
+  );
+  if (anchor.getTime() <= now.getTime()) {
+    anchor = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
+    );
+  }
+  return Math.floor(anchor.getTime() / 1000);
 }
 
 // Creates a Stripe Checkout Session for the $1/month membership and hands
@@ -21,13 +41,18 @@ module.exports = async (req, res) => {
       .json({ error: "Stripe isn't configured on this deployment." });
   }
 
-  const { firstName, lastName, email } = req.body || {};
+  const { firstName, lastName, email, referredBy } = req.body || {};
 
   if (!firstName || !lastName || !email) {
     return res
       .status(400)
       .json({ error: "First name, last name, and email are required." });
   }
+
+  // referredBy is an untrusted referral code from the URL — cap its length
+  // and let the webhook be the one to decide whether it matches a real member.
+  const referralCode =
+    typeof referredBy === "string" ? referredBy.trim().slice(0, 32) : "";
 
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
   const baseUrl = getBaseUrl(req);
@@ -51,7 +76,11 @@ module.exports = async (req, res) => {
           quantity: 1,
         },
       ],
-      metadata: { firstName, lastName },
+      subscription_data: {
+        billing_cycle_anchor: nextBillingAnchor(),
+        proration_behavior: "none",
+      },
+      metadata: { firstName, lastName, referredBy: referralCode },
       success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/join.html?cancelled=1`,
     });

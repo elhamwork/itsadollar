@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pick where it goes — It's a Dollar</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 font-family=%22system-ui%22 font-weight=%22700%22>$</text></svg>">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body class="no-js">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="checkout-header">
+  <div class="shell header__inner">
+    <a class="brand" href="index.html">It's a Dollar</a>
+  </div>
+</header>
+
+<main id="main" class="checkout">
+  <div class="checkout__inner">
+    <div id="vote-loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="step-panel__note" style="text-align:center">Loading your ballot&hellip;</p>
+    </div>
+
+    <section id="vote-panel" hidden>
+      <p class="eyebrow" id="vote-cycle-label" style="text-align:center"></p>
+      <h1 class="step-panel__title" tabindex="-1" style="text-align:center">Pick where it goes.</h1>
+      <p class="step-panel__note" style="text-align:center">This month&rsquo;s dollars are in. One vote, your call.</p>
+
+      <div class="cause-list" id="cause-list" role="radiogroup" aria-label="Causes"></div>
+
+      <p class="error" id="vote-error" role="alert" style="text-align:center;margin-top:1rem"></p>
+
+      <div class="form__actions">
+        <button type="button" class="btn btn--lg btn--block" id="vote-submit">Cast my vote</button>
+      </div>
+
+      <div id="extra-pick" hidden style="text-align:center;margin-top:2rem">
+        <p class="fine" id="points-note"></p>
+        <button type="button" class="btn btn--quiet" id="extra-pick-btn">Use 10 points for an extra pick</button>
+      </div>
+    </section>
+
+    <section id="vote-done" class="confirm" hidden>
+      <svg class="confirm__mark" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+        <circle cx="30" cy="30" r="26" stroke="currentColor" stroke-width="2.5"/>
+        <path d="M19 31l7 7 15-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1 class="confirm__title" tabindex="-1">Vote&rsquo;s in.</h1>
+      <p class="confirm__note" id="vote-done-note">Thanks for picking where this month&rsquo;s dollars go.</p>
+      <div class="confirm__actions">
+        <a class="btn btn--lg" href="index.html">Back to home</a>
+      </div>
+    </section>
+
+    <section id="vote-invalid" class="confirm" hidden>
+      <h1 class="confirm__title" tabindex="-1">Link expired.</h1>
+      <p class="confirm__note" id="vote-invalid-note">This voting link is no longer valid.</p>
+      <div class="confirm__actions">
+        <a class="btn btn--lg" href="index.html">Back to home</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/vote.js" defer></script>
+</body>
+</html>

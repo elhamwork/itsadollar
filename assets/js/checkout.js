@@ -89,6 +89,7 @@
           firstName: fields.firstName.el.value.trim(),
           lastName: fields.lastName.el.value.trim(),
           email: fields.email.el.value.trim(),
+          referredBy: new URLSearchParams(window.location.search).get("ref") || "",
         }),
       });
       var data = await res.json();

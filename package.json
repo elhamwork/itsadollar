@@ -2,8 +2,15 @@
   "name": "itsadollar",
   "version": "1.0.0",
   "private": true,
-  "description": "It's a Dollar — a $1/month membership site, static front end + Vercel serverless API for Stripe Checkout.",
+  "description": "It's a Dollar — a $1/month membership site. Static front end + Vercel serverless API for Stripe Checkout, monthly cause voting, referrals, and vote-link email.",
+  "scripts": {
+    "migrate": "node scripts/migrate.js"
+  },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
     "stripe": "^16.12.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
   }
 }
