@@ -37,11 +37,6 @@
       <div class="form__actions">
         <button type="button" class="btn btn--lg btn--block" id="vote-submit">Cast my vote</button>
       </div>
-
-      <div id="extra-pick" hidden style="text-align:center;margin-top:2rem">
-        <p class="fine" id="points-note"></p>
-        <button type="button" class="btn btn--quiet" id="extra-pick-btn">Use 10 points for an extra pick</button>
-      </div>
     </section>
 
     <section id="vote-done" class="confirm" hidden>
@@ -50,7 +45,18 @@
         <path d="M19 31l7 7 15-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <h1 class="confirm__title" tabindex="-1">Vote&rsquo;s in.</h1>
-      <p class="confirm__note" id="vote-done-note">Thanks for picking where this month&rsquo;s dollars go.</p>
+      <p class="confirm__note">You picked <strong id="picked-cause-name"></strong>.</p>
+      <p class="fine">Weight: <span id="picked-weight">1</span> &mdash; every point you spend on a boost adds 1.</p>
+
+      <div class="boost" id="boost-block" hidden>
+        <p class="fine" id="boost-balance"></p>
+        <div class="boost__row">
+          <input class="input" type="number" id="boost-points" min="1" step="1" placeholder=" " aria-label="Points to spend">
+          <button type="button" class="btn btn--quiet" id="boost-btn">Boost</button>
+        </div>
+        <p class="error" id="boost-error" role="alert"></p>
+      </div>
+
       <div class="confirm__actions">
         <a class="btn btn--lg" href="index.html">Back to home</a>
       </div>

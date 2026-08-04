@@ -2,7 +2,7 @@ const { sql } = require("../../lib/db");
 const { verifyVoteToken } = require("../../lib/voteToken");
 
 // GET ?token=... — what vote.html needs to render: the cycle's causes, this
-// member's points balance, and whether they've already cast their free vote.
+// member's points balance, and their current pick + its weight, if any.
 module.exports = async (req, res) => {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
     }
 
     const { rows: voteRows } = await sql`
-      select cause_id from votes where cycle_id = ${cycle.id} and member_id = ${decoded.memberId}
+      select cause_id, weight from votes where cycle_id = ${cycle.id} and member_id = ${decoded.memberId}
     `;
 
     res.status(200).json({
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
       firstName: memberRows[0].first_name,
       points: memberRows[0].points,
       causes,
-      votesCast: voteRows.map((v) => v.cause_id),
+      myVote: voteRows[0] || null,
     });
   } catch (err) {
     console.error("Vote context lookup failed:", err.message);

@@ -8,7 +8,8 @@ serverless functions in `/api` for:
 - A monthly **vote**: once a cycle's money is in, every member gets emailed
   a link to pick which of 2–4 causes it goes to
 - A **referral** system: sharing your link earns 10 points when someone
-  joins through it; 10 points buys an extra vote in the current cycle
+  joins through it. Every vote starts at weight 1; spending points boosts
+  your own pick's weight 1:1 (10 points spent = +10 to your cause's tally)
 - A public, provable **donations log** (`impact.html`) showing what was
   actually given each cycle
 - A password-protected **admin page** (`/admin.html`, not linked from the
@@ -113,7 +114,9 @@ vercel --prod
 2. On the 15th, Vercel Cron (configured in `vercel.json`) automatically
    emails every member a link to `/vote.html` shortly after that day's
    charges land.
-3. Members vote. Anyone with 10+ points can spend them for an extra pick.
+3. Members vote (weight 1) and can spend any points they have to boost
+   their own pick further — 1 point = +1 weight. `/admin.html` shows live
+   tallies with the leading cause highlighted while the cycle is open.
 4. When you've actually sent the money, go back to `/admin.html`, pick the
    winning cause, enter the amount and a proof link, and close the cycle.
    It immediately appears on `/impact.html`.

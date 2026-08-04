@@ -6,7 +6,6 @@
   var loading = document.getElementById("vote-loading");
   var votePanel = document.getElementById("vote-panel");
   var doneSection = document.getElementById("vote-done");
-  var doneNote = document.getElementById("vote-done-note");
   var invalidSection = document.getElementById("vote-invalid");
   var invalidNote = document.getElementById("vote-invalid-note");
 
@@ -14,9 +13,14 @@
   var causeList = document.getElementById("cause-list");
   var errorEl = document.getElementById("vote-error");
   var submitBtn = document.getElementById("vote-submit");
-  var extraPickBlock = document.getElementById("extra-pick");
-  var pointsNote = document.getElementById("points-note");
-  var extraPickBtn = document.getElementById("extra-pick-btn");
+
+  var pickedNameEl = document.getElementById("picked-cause-name");
+  var pickedWeightEl = document.getElementById("picked-weight");
+  var boostBlock = document.getElementById("boost-block");
+  var boostBalance = document.getElementById("boost-balance");
+  var boostInput = document.getElementById("boost-points");
+  var boostBtn = document.getElementById("boost-btn");
+  var boostError = document.getElementById("boost-error");
 
   var selectedCauseId = null;
   var context = null;
@@ -32,10 +36,23 @@
     show(invalidSection);
   }
 
-  function renderCauses(causes) {
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function causeName(causeId) {
+    var cause = context.causes.find(function (c) {
+      return c.id === causeId;
+    });
+    return cause ? cause.name : "";
+  }
+
+  function renderCauses() {
     selectedCauseId = null;
     causeList.innerHTML = "";
-    causes.forEach(function (cause) {
+    context.causes.forEach(function (cause) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "cause-option";
@@ -62,34 +79,21 @@
   function renderVotePanel() {
     cycleLabelEl.textContent = context.cycleLabel;
     errorEl.textContent = "";
-    extraPickBlock.hidden = true;
-    renderCauses(context.causes);
+    renderCauses();
     show(votePanel);
   }
 
-  function renderDone(justVoted) {
-    if (justVoted && justVoted.wasFree === false) {
-      doneNote.textContent = "Extra pick counted. Thanks for making it count twice.";
-    } else {
-      doneNote.textContent = "Thanks for picking where this month’s dollars go.";
-    }
+  function renderDone() {
+    pickedNameEl.textContent = causeName(context.myVote.cause_id);
+    pickedWeightEl.textContent = context.myVote.weight;
 
-    var canExtra = context.points >= 10 && context.cycleStatus === "open";
-    var extraBtn = document.getElementById("done-extra-pick-btn");
-    if (!extraBtn && canExtra) {
-      extraBtn = document.createElement("button");
-      extraBtn.type = "button";
-      extraBtn.id = "done-extra-pick-btn";
-      extraBtn.className = "btn btn--quiet";
-      extraBtn.style.marginTop = "1.5rem";
-      extraBtn.addEventListener("click", function () {
-        renderVotePanel();
-      });
-      doneSection.querySelector(".confirm__actions").insertAdjacentElement("afterend", extraBtn);
-    }
-    if (extraBtn) {
-      extraBtn.hidden = !canExtra;
-      extraBtn.textContent = "Use 10 points for an extra pick (" + context.points + " available)";
+    var canBoost = context.points > 0 && context.cycleStatus === "open";
+    boostBlock.hidden = !canBoost;
+    if (canBoost) {
+      boostBalance.textContent = context.points + " point" + (context.points === 1 ? "" : "s") + " available to boost with.";
+      boostInput.max = context.points;
+      boostInput.value = "";
+      boostError.textContent = "";
     }
 
     show(doneSection);
@@ -113,9 +117,8 @@
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't record that vote.");
 
-      context.points -= data.pointsSpent || 0;
-      context.votesCast.push(selectedCauseId);
-      renderDone(data);
+      context.myVote = { cause_id: data.causeId, weight: data.weight };
+      renderDone();
     } catch (err) {
       errorEl.textContent = err.message;
     } finally {
@@ -124,11 +127,36 @@
     }
   });
 
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
+  boostBtn.addEventListener("click", async function () {
+    var points = Number(boostInput.value);
+    boostError.textContent = "";
+    if (!Number.isInteger(points) || points < 1) {
+      boostError.textContent = "Enter a whole number of points, at least 1.";
+      return;
+    }
+
+    boostBtn.disabled = true;
+    boostBtn.textContent = "Boosting…";
+
+    try {
+      var res = await fetch("/api/vote/boost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token, points: points }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't apply that boost.");
+
+      context.myVote.weight = data.weight;
+      context.points = data.pointsRemaining;
+      renderDone();
+    } catch (err) {
+      boostError.textContent = err.message;
+    } finally {
+      boostBtn.disabled = false;
+      boostBtn.textContent = "Boost";
+    }
+  });
 
   async function init() {
     if (!token) {
@@ -149,8 +177,8 @@
         return;
       }
 
-      if (context.votesCast.length > 0) {
-        renderDone(null);
+      if (context.myVote) {
+        renderDone();
       } else {
         renderVotePanel();
       }

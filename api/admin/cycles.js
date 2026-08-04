@@ -14,10 +14,19 @@ module.exports = async (req, res) => {
     `;
     const { rows: causes } = await sql`select * from causes order by id asc`;
     const { rows: donations } = await sql`select * from donations`;
+    const { rows: tallies } = await sql`
+      select cause_id, sum(weight)::int as total, count(*)::int as voters
+      from votes group by cause_id
+    `;
 
     const result = cycles.map((cycle) => ({
       ...cycle,
-      causes: causes.filter((c) => c.cycle_id === cycle.id),
+      causes: causes
+        .filter((c) => c.cycle_id === cycle.id)
+        .map((c) => {
+          const t = tallies.find((row) => row.cause_id === c.id);
+          return { ...c, voteTotal: t ? t.total : 0, voterCount: t ? t.voters : 0 };
+        }),
       donation: donations.find((d) => d.cycle_id === cycle.id) || null,
     }));
 

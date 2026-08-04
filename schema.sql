@@ -38,13 +38,16 @@ create table if not exists causes (
   created_at timestamptz not null default now()
 );
 
+-- One row per member per cycle. The free vote starts weight at 1; boosting
+-- (spending points on your own pick) increases weight on this same row.
 create table if not exists votes (
   id serial primary key,
   cycle_id integer not null references cycles(id),
   member_id integer not null references members(id),
   cause_id integer not null references causes(id),
-  points_spent integer not null default 0,
-  created_at timestamptz not null default now()
+  weight integer not null default 1,
+  created_at timestamptz not null default now(),
+  unique (cycle_id, member_id)
 );
 
 create table if not exists donations (
@@ -64,5 +67,4 @@ create table if not exists admin_login_attempts (
   attempted_at timestamptz not null default now()
 );
 
-create index if not exists idx_votes_cycle_member on votes(cycle_id, member_id);
 create index if not exists idx_admin_attempts_ip_time on admin_login_attempts(ip, attempted_at);
