@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join for $1/month — It's a Dollar</title>
+<meta name="description" content="Join It's a Dollar. $1 a month, charged automatically. Cancel anytime.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 font-family=%22system-ui%22 font-weight=%22700%22>$</text></svg>">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body class="no-js">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="checkout-header">
+  <div class="shell header__inner">
+    <a class="brand" href="index.html">It's a Dollar</a>
+    <a class="link" href="index.html">Cancel</a>
+  </div>
+</header>
+
+<main id="main" class="checkout">
+  <div class="checkout__inner">
+
+    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Signup progress" data-progress>
+      <span class="progress__seg is-done" data-seg="1"></span>
+      <span class="progress__seg" data-seg="2"></span>
+      <span class="progress__seg" data-seg="3"></span>
+    </div>
+
+    <form novalidate data-join-form>
+
+      <!-- STEP 1 — Details -->
+      <section class="step-panel" id="step-1" data-step="1">
+        <h1 class="step-panel__title" tabindex="-1">Join for $1/month.</h1>
+        <p class="step-panel__note">Just the basics. It takes about a minute.</p>
+
+        <div class="form">
+          <div class="field-group">
+            <div class="field-row">
+              <div class="input-wrap">
+                <input class="input" type="text" id="firstName" name="firstName" placeholder=" " autocomplete="given-name" required>
+                <label class="input-label" for="firstName">First name</label>
+                <span class="error" id="err-firstName" role="alert"></span>
+              </div>
+              <div class="input-wrap">
+                <input class="input" type="text" id="lastName" name="lastName" placeholder=" " autocomplete="family-name" required>
+                <label class="input-label" for="lastName">Last name</label>
+                <span class="error" id="err-lastName" role="alert"></span>
+              </div>
+            </div>
+            <div class="input-wrap">
+              <input class="input" type="email" id="email" name="email" placeholder=" " autocomplete="email" required>
+              <label class="input-label" for="email">Email</label>
+              <span class="error" id="err-email" role="alert"></span>
+            </div>
+          </div>
+
+          <div class="form__actions">
+            <button type="button" class="btn btn--lg btn--block" data-next="1">Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2 — Payment -->
+      <section class="step-panel" id="step-2" data-step="2" hidden>
+        <h1 class="step-panel__title" tabindex="-1">Payment</h1>
+        <p class="step-panel__note">Charged automatically, every month. Cancel anytime.</p>
+
+        <div class="form">
+          <div class="amount">
+            <span class="amount__label">Your monthly contribution</span>
+            <span class="amount__value">$1 <small>/month</small></span>
+          </div>
+
+          <div class="field-group">
+            <div class="input-wrap">
+              <input class="input" type="text" id="cardNumber" name="cardNumber" placeholder=" " inputmode="numeric" autocomplete="cc-number" maxlength="19" required>
+              <label class="input-label" for="cardNumber">Card number</label>
+              <span class="error" id="err-cardNumber" role="alert"></span>
+            </div>
+            <div class="field-row">
+              <div class="input-wrap">
+                <input class="input" type="text" id="cardExpiry" name="cardExpiry" placeholder=" " inputmode="numeric" autocomplete="cc-exp" maxlength="5" required>
+                <label class="input-label" for="cardExpiry">MM / YY</label>
+                <span class="error" id="err-cardExpiry" role="alert"></span>
+              </div>
+              <div class="input-wrap">
+                <input class="input" type="text" id="cardCvc" name="cardCvc" placeholder=" " inputmode="numeric" autocomplete="cc-csc" maxlength="4" required>
+                <label class="input-label" for="cardCvc">CVC</label>
+                <span class="error" id="err-cardCvc" role="alert"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form__actions">
+            <button type="button" class="btn btn--lg btn--block" data-submit>Join — $1/month</button>
+          </div>
+          <p class="fine">By joining, you agree to a recurring charge of $1 every month until you cancel.</p>
+          <div style="text-align:center">
+            <button type="button" class="back-link" data-back="2">&larr; Back</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 — Confirmation -->
+      <section class="step-panel confirm" id="step-3" data-step="3" hidden>
+        <svg class="confirm__mark" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+          <circle cx="30" cy="30" r="26" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M19 31l7 7 15-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1 class="confirm__title" tabindex="-1">You&rsquo;re in.</h1>
+        <p class="confirm__note">Thank you for joining the $1/month movement, <span data-confirm-name>friend</span>.</p>
+        <div class="confirm__actions">
+          <a class="btn btn--lg" href="index.html">Back to home</a>
+        </div>
+      </section>
+
+    </form>
+  </div>
+</main>
+
+<script src="assets/js/site.js" defer></script>
+<script src="assets/js/join.js" defer></script>
+</body>
+</html>
