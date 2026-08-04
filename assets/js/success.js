@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var API_BASE = window.ITSADOLLAR_API_BASE || "http://localhost:4242";
+  var API_BASE = window.ITSADOLLAR_API_BASE || "";
   var nameEl = document.querySelector("[data-confirm-name]");
   var params = new URLSearchParams(window.location.search);
   var sessionId = params.get("session_id");

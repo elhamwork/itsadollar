@@ -4,7 +4,7 @@
   var form = document.querySelector("[data-join-form]");
   if (!form) return;
 
-  var API_BASE = window.ITSADOLLAR_API_BASE || "http://localhost:4242";
+  var API_BASE = window.ITSADOLLAR_API_BASE || "";
 
   var panels = {
     1: document.getElementById("step-1"),
@@ -97,7 +97,7 @@
     } catch (err) {
       showRedirectError(
         err.message === "Failed to fetch"
-          ? "Can't reach the payment server. Is it running? See server/README.md."
+          ? "Can't reach the payment server right now. Please try again in a moment."
           : err.message
       );
     }

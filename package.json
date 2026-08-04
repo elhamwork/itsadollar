@@ -1,0 +1,9 @@
+{
+  "name": "itsadollar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "It's a Dollar — a $1/month membership site, static front end + Vercel serverless API for Stripe Checkout.",
+  "dependencies": {
+    "stripe": "^16.12.0"
+  }
+}
