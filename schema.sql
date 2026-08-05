@@ -60,6 +60,20 @@ create table if not exists donations (
   donated_at timestamptz not null default now()
 );
 
+-- Real-money boosts, paid via Stripe. stripe_session_id is unique so the
+-- webhook can safely apply the weight bump exactly once even if Stripe
+-- redelivers the event.
+create table if not exists paid_boosts (
+  id serial primary key,
+  stripe_session_id text unique not null,
+  member_id integer not null references members(id),
+  cycle_id integer not null references cycles(id),
+  vote_id integer not null references votes(id),
+  amount_cents integer not null,
+  points integer not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists admin_login_attempts (
   id serial primary key,
   ip text not null,

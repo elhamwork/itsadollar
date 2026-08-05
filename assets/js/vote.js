@@ -22,6 +22,11 @@
   var boostBtn = document.getElementById("boost-btn");
   var boostError = document.getElementById("boost-error");
 
+  var payBoostInput = document.getElementById("pay-boost-points");
+  var payBoostBtn = document.getElementById("pay-boost-btn");
+  var payBoostError = document.getElementById("pay-boost-error");
+  var payBoostNotice = document.getElementById("pay-boost-notice");
+
   var selectedCauseId = null;
   var context = null;
 
@@ -158,6 +163,40 @@
     }
   });
 
+  payBoostBtn.addEventListener("click", async function () {
+    var points = Number(payBoostInput.value);
+    payBoostError.textContent = "";
+    if (!Number.isInteger(points) || points < 1) {
+      payBoostError.textContent = "Enter a whole number of dollars, at least 1.";
+      return;
+    }
+
+    payBoostBtn.disabled = true;
+    payBoostBtn.textContent = "Redirecting…";
+
+    try {
+      var res = await fetch("/api/vote?action=pay-boost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token, points: points }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't start payment.");
+      window.location.href = data.url;
+    } catch (err) {
+      payBoostError.textContent = err.message;
+      payBoostBtn.disabled = false;
+      payBoostBtn.textContent = "Pay & boost";
+    }
+  });
+
+  async function refreshContext() {
+    var res = await fetch("/api/vote?action=context&token=" + encodeURIComponent(token));
+    var data = await res.json();
+    if (res.ok) context = data;
+    return res.ok;
+  }
+
   async function init() {
     if (!token) {
       showInvalid("This link is missing its token.");
@@ -181,6 +220,16 @@
         renderDone();
       } else {
         renderVotePanel();
+      }
+
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("boosted") === "1") {
+        history.replaceState(null, "", window.location.pathname + "?token=" + encodeURIComponent(token));
+        payBoostNotice.hidden = false;
+        setTimeout(async function () {
+          if (await refreshContext()) renderDone();
+          payBoostNotice.hidden = true;
+        }, 1800);
       }
     } catch {
       showInvalid("Can't reach the server right now.");

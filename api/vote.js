@@ -1,5 +1,9 @@
+const Stripe = require("stripe");
 const { sql } = require("../lib/db");
 const { verifyVoteToken } = require("../lib/voteToken");
+const { getBaseUrl } = require("../lib/baseUrl");
+
+const DOLLARS_PER_BOOST_POINT = 1;
 
 // All voting operations live in this one file (dispatched by ?action=) so
 // the vote surface counts as a single serverless function — see api/admin.js
@@ -14,6 +18,8 @@ module.exports = async (req, res) => {
       return submit(req, res);
     case "boost":
       return boost(req, res);
+    case "pay-boost":
+      return payBoost(req, res);
     case "current":
       return current(req, res);
     default:
@@ -218,5 +224,86 @@ async function boost(req, res) {
   } catch (err) {
     console.error("Vote boost failed:", err.message);
     res.status(500).json({ error: "Couldn't apply that boost." });
+  }
+}
+
+// POST ?action=pay-boost { token, points } — starts a Stripe Checkout
+// Session (one-time payment, not a subscription) for `points` dollars.
+// The actual weight bump happens in the webhook once payment succeeds, not
+// here — this only creates the session and hands back a URL to redirect to.
+async function payBoost(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(500).json({ error: "Payments aren't configured on this deployment." });
+  }
+
+  const token = (req.body || {}).token;
+  const decoded = verifyVoteToken(token);
+  if (!decoded) {
+    return res.status(401).json({ error: "This link has expired or is invalid." });
+  }
+
+  const points = Number((req.body || {}).points);
+  if (!Number.isInteger(points) || points < 1) {
+    return res.status(400).json({ error: "Enter a whole number of dollars, at least 1." });
+  }
+
+  try {
+    const { rows: cycleRows } = await sql`select status from cycles where id = ${decoded.cycleId}`;
+    if (cycleRows.length === 0 || cycleRows[0].status !== "open") {
+      return res.status(400).json({ error: "Voting isn't open for this cycle anymore." });
+    }
+
+    const { rows: voteRows } = await sql`
+      select id, cause_id from votes where cycle_id = ${decoded.cycleId} and member_id = ${decoded.memberId}
+    `;
+    if (voteRows.length === 0) {
+      return res.status(400).json({ error: "Cast your vote for a cause first." });
+    }
+
+    const { rows: memberRows } = await sql`select email from members where id = ${decoded.memberId}`;
+    if (memberRows.length === 0) {
+      return res.status(404).json({ error: "Member not found." });
+    }
+
+    const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+    const baseUrl = getBaseUrl(req);
+    const returnUrl = `${baseUrl}/vote.html?token=${encodeURIComponent(token)}`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: memberRows[0].email,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: DOLLARS_PER_BOOST_POINT * 100,
+            product_data: {
+              name: "Boost your vote",
+              description: `Adds ${points} to your pick's weight.`,
+            },
+          },
+          quantity: points,
+        },
+      ],
+      metadata: {
+        memberId: String(decoded.memberId),
+        cycleId: String(decoded.cycleId),
+        voteId: String(voteRows[0].id),
+        points: String(points),
+      },
+      success_url: `${returnUrl}&boosted=1`,
+      cancel_url: returnUrl,
+    });
+
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error("Failed to create boost payment:", err.message);
+    res.status(500).json({ error: "Couldn't start payment. Please try again." });
   }
 }

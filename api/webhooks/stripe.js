@@ -67,6 +67,28 @@ async function upsertMemberFromSession(session) {
   }
 }
 
+async function applyPaidBoost(session) {
+  const memberId = Number(session.metadata?.memberId);
+  const cycleId = Number(session.metadata?.cycleId);
+  const voteId = Number(session.metadata?.voteId);
+  const points = Number(session.metadata?.points);
+
+  if (!memberId || !cycleId || !voteId || !points) {
+    console.error("Paid boost webhook missing metadata:", session.metadata);
+    return;
+  }
+
+  const { rows: inserted } = await sql`
+    insert into paid_boosts (stripe_session_id, member_id, cycle_id, vote_id, amount_cents, points)
+    values (${session.id}, ${memberId}, ${cycleId}, ${voteId}, ${session.amount_total}, ${points})
+    on conflict (stripe_session_id) do nothing
+    returning id
+  `;
+  if (inserted.length === 0) return; // duplicate webhook delivery — already applied
+
+  await sql`update votes set weight = weight + ${points} where id = ${voteId}`;
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -95,6 +117,8 @@ module.exports = async (req, res) => {
       const session = event.data.object;
       if (session.mode === "subscription" && session.payment_status === "paid") {
         await upsertMemberFromSession(session);
+      } else if (session.mode === "payment" && session.payment_status === "paid") {
+        await applyPaidBoost(session);
       }
     }
   } catch (err) {

@@ -1,13 +1,8 @@
 const Stripe = require("stripe");
+const { getBaseUrl } = require("../lib/baseUrl");
 
 const BILLING_DAY = 15;
 const BILLING_HOUR_UTC = 15; // Anchor time; the vote-email cron runs an hour after this.
-
-function getBaseUrl(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
 
 // Everyone's renewal charge lands on the 15th, no matter when they joined.
 // The very first charge happens immediately (today, in full — no proration),

@@ -57,6 +57,16 @@
         <p class="error" id="boost-error" role="alert"></p>
       </div>
 
+      <div class="boost" id="pay-boost-block">
+        <p class="fine">Or pay to boost directly &mdash; $1 adds 1, no points needed.</p>
+        <div class="boost__row">
+          <input class="input" type="number" id="pay-boost-points" min="1" step="1" placeholder=" " aria-label="Dollars to pay">
+          <button type="button" class="btn btn--quiet" id="pay-boost-btn">Pay &amp; boost</button>
+        </div>
+        <p class="error" id="pay-boost-error" role="alert"></p>
+        <p class="fine" id="pay-boost-notice" hidden>Payment received &mdash; updating your weight&hellip;</p>
+      </div>
+
       <div class="confirm__actions">
         <a class="btn btn--lg" href="index.html">Back to home</a>
       </div>

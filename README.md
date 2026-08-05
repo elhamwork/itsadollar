@@ -9,7 +9,9 @@ serverless functions in `/api` for:
   a link to pick which of 2–4 causes it goes to
 - A **referral** system: sharing your link earns 10 points when someone
   joins through it. Every vote starts at weight 1; spending points boosts
-  your own pick's weight 1:1 (10 points spent = +10 to your cause's tally)
+  your own pick's weight 1:1 (10 points spent = +10 to your cause's tally).
+  Anyone can also pay to boost directly with real money — $1 = +1 weight,
+  no points required — via a separate one-time Stripe Checkout
 - A public, provable **donations log** (`impact.html`) showing what was
   actually given each cycle
 - A password-protected **admin page** (`/admin.html`, not linked from the
@@ -53,9 +55,10 @@ npm run migrate
 - **Webhook**: Stripe Dashboard → Developers → Webhooks → **Add endpoint**,
   URL = `https://<your-domain>/api/webhooks/stripe`, event =
   `checkout.session.completed`. Copy the signing secret it gives you into
-  `STRIPE_WEBHOOK_SECRET`. This webhook is what actually creates a member
-  record and credits referral points after a successful payment — without
-  it, nobody shows up in the database.
+  `STRIPE_WEBHOOK_SECRET`. This one event covers both membership signups and
+  paid boosts (the handler branches on the session's mode) — without it,
+  neither members nor paid boosts ever actually land in the database, even
+  though Stripe shows the payment as successful.
 
 ### 3. Resend (vote-link emails)
 

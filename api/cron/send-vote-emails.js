@@ -1,12 +1,7 @@
 const { sql } = require("../../lib/db");
 const { createVoteToken } = require("../../lib/voteToken");
 const { sendEmail } = require("../../lib/email");
-
-function getBaseUrl(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
+const { getBaseUrl } = require("../../lib/baseUrl");
 
 // Runs on Vercel Cron (see vercel.json), shortly after the 15th's charges
 // land. Finds the one open cycle awaiting emails and sends every member a
