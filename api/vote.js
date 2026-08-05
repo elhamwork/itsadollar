@@ -304,6 +304,6 @@ async function payBoost(req, res) {
     res.status(200).json({ url: session.url });
   } catch (err) {
     console.error("Failed to create boost payment:", err.message);
-    res.status(500).json({ error: "Couldn't start payment. Please try again." });
+    res.status(500).json({ error: "Couldn't start payment: " + err.message });
   }
 }
