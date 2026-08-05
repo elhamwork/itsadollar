@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
     return res.status(500).end();
   }
 
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
   const raw = await getRawBody(req);
   const signature = req.headers["stripe-signature"];
 

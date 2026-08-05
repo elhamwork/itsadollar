@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: "Missing session_id." });
   }
 
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+  const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
 
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
@@ -50,6 +50,6 @@ module.exports = async (req, res) => {
     res.status(200).json(result);
   } catch (err) {
     console.error("Failed to retrieve checkout session:", err.message);
-    res.status(500).json({ error: "Couldn't retrieve that session." });
+    res.status(500).json({ error: "Couldn't retrieve that session: " + err.message });
   }
 };

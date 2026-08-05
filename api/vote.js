@@ -270,7 +270,7 @@ async function payBoost(req, res) {
       return res.status(404).json({ error: "Member not found." });
     }
 
-    const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
     const baseUrl = getBaseUrl(req);
     const returnUrl = `${baseUrl}/vote.html?token=${encodeURIComponent(token)}`;
 
