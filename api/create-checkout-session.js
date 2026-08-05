@@ -1,29 +1,19 @@
 const { getStripeClient, describeStripeError } = require("../lib/stripeClient");
 const { getBaseUrl } = require("../lib/baseUrl");
 
-const BILLING_DAY = 15;
-const BILLING_HOUR_UTC = 15; // Anchor time; the vote-email cron runs an hour after this.
-
-// Everyone's renewal charge lands on the 15th, no matter when they joined.
-// The very first charge happens immediately (today, in full — no proration),
-// then the subscription's billing_cycle_anchor snaps every charge after
-// that to the 15th.
-function nextBillingAnchor() {
-  const now = new Date();
-  let anchor = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
-  );
-  if (anchor.getTime() <= now.getTime()) {
-    anchor = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
-    );
-  }
-  return Math.floor(anchor.getTime() / 1000);
-}
+const BASE_AMOUNT_CENTS = 100;
+const FEE_COVER_CENTS = 35;
 
 // Creates a Stripe Checkout Session for the $1/month membership and hands
 // the client a URL to redirect to. Card entry, validation, and wallet
 // options (Apple Pay / Google Pay) are all handled on Stripe's hosted page.
+//
+// Charges the full amount today. The subscription's billing_cycle_anchor
+// gets rescheduled to the 15th afterward, in the webhook once payment is
+// confirmed — not here. Setting billing_cycle_anchor at creation time
+// charges nothing for the stub period and waits until the anchor for the
+// first charge, which isn't what "charged today, then aligned to the 15th"
+// means.
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -36,7 +26,7 @@ module.exports = async (req, res) => {
       .json({ error: "Stripe isn't configured on this deployment." });
   }
 
-  const { firstName, lastName, email, referredBy } = req.body || {};
+  const { firstName, lastName, email, referredBy, coverFee } = req.body || {};
 
   if (!firstName || !lastName || !email) {
     return res
@@ -48,6 +38,9 @@ module.exports = async (req, res) => {
   // and let the webhook be the one to decide whether it matches a real member.
   const referralCode =
     typeof referredBy === "string" ? referredBy.trim().slice(0, 32) : "";
+
+  const coversFee = coverFee === true;
+  const unitAmount = BASE_AMOUNT_CENTS + (coversFee ? FEE_COVER_CENTS : 0);
 
   const stripe = getStripeClient();
   const baseUrl = getBaseUrl(req);
@@ -61,21 +54,19 @@ module.exports = async (req, res) => {
         {
           price_data: {
             currency: "usd",
-            unit_amount: 100,
+            unit_amount: unitAmount,
             recurring: { interval: "month" },
             product_data: {
               name: "It's a Dollar — Membership",
-              description: "$1 given every month.",
+              description: coversFee
+                ? "$1 given every month, plus 35¢ to cover the card processing fee."
+                : "$1 given every month.",
             },
           },
           quantity: 1,
         },
       ],
-      subscription_data: {
-        billing_cycle_anchor: nextBillingAnchor(),
-        proration_behavior: "none",
-      },
-      metadata: { firstName, lastName, referredBy: referralCode },
+      metadata: { firstName, lastName, referredBy: referralCode, coverFee: String(coversFee) },
       success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/join.html?cancelled=1`,
     });

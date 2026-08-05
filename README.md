@@ -146,12 +146,27 @@ verification needed, since Checkout runs on Stripe's own verified domain.
 
 ## Billing: everyone lands on the 15th
 
-`api/create-checkout-session.js` sets a `billing_cycle_anchor` on the
-subscription to the next occurrence of the 15th (15:00 UTC), with
-`proration_behavior: "none"`. That means: the first charge is a full $1
-today, and every charge after that — including the second one — lands on
-the 15th. The vote-email cron is scheduled for 16:00 UTC on the 15th, an
-hour after the anchor, to give that day's charges time to settle.
+`api/create-checkout-session.js` charges the full amount today, as a normal
+subscription creation — no `billing_cycle_anchor` at this step. Setting the
+anchor at creation time with `proration_behavior: "none"` charges nothing
+for the stub period and waits until the anchor for the *first* charge,
+which isn't what "charged today, then aligned to the 15th" means.
+
+Instead, `api/webhooks/stripe.js` reschedules the anchor *after* payment is
+confirmed, via `stripe.subscriptions.update(..., { billing_cycle_anchor,
+proration_behavior: "none" })`. Run as an update on an already-paid
+subscription, this doesn't trigger a second charge — it just moves which
+day future renewals land on. The vote-email cron is scheduled for 16:00
+UTC on the 15th, an hour after the anchor, to give that day's charges time
+to settle.
+
+## Optional fee coverage
+
+The join form has a checkbox (checked by default) letting a member add 35¢
+to their monthly charge to cover Stripe's processing fee — otherwise around
+a third of every $1 goes to card fees rather than the cause. Unchecking it
+charges exactly $1/month instead. This applies to the whole recurring
+subscription amount, not just the first charge.
 
 ## Going live
 

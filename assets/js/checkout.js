@@ -19,6 +19,21 @@
     email: { el: document.getElementById("email"), msg: "Enter a valid email address." },
   };
 
+  var coverFeeCheckbox = document.getElementById("cover-fee");
+  var amountEls = document.querySelectorAll(".js-amount");
+
+  function updateAmountDisplays() {
+    var text = coverFeeCheckbox && coverFeeCheckbox.checked ? "$1.35" : "$1";
+    amountEls.forEach(function (el) {
+      el.textContent = text;
+    });
+  }
+
+  if (coverFeeCheckbox) {
+    coverFeeCheckbox.addEventListener("change", updateAmountDisplays);
+    updateAmountDisplays();
+  }
+
   function setError(name, message) {
     var f = fields[name];
     if (!f) return;
@@ -90,6 +105,7 @@
           lastName: fields.lastName.el.value.trim(),
           email: fields.email.el.value.trim(),
           referredBy: new URLSearchParams(window.location.search).get("ref") || "",
+          coverFee: !!(coverFeeCheckbox && coverFeeCheckbox.checked),
         }),
       });
       var data = await res.json();

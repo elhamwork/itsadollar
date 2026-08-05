@@ -2,6 +2,40 @@ const { getStripeClient } = require("../../lib/stripeClient");
 const { sql } = require("../../lib/db");
 const { generateReferralCode } = require("../../lib/referralCode");
 
+const BILLING_DAY = 15;
+const BILLING_HOUR_UTC = 15; // The vote-email cron runs an hour after this.
+
+// Everyone's renewal lands on the 15th, no matter when they joined. The
+// first charge already happened at Checkout (full amount, no proration) —
+// this only reschedules which day future renewals fall on. Because it runs
+// as an update on an already-paid subscription with proration_behavior
+// "none", it doesn't trigger a second charge; it just shortens or extends
+// the current period to end on the anchor.
+function nextBillingAnchor() {
+  const now = new Date();
+  let anchor = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
+  );
+  if (anchor.getTime() <= now.getTime()) {
+    anchor = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, BILLING_DAY, BILLING_HOUR_UTC, 0, 0)
+    );
+  }
+  return Math.floor(anchor.getTime() / 1000);
+}
+
+async function alignBillingToThe15th(stripe, session) {
+  if (!session.subscription) return;
+  try {
+    await stripe.subscriptions.update(session.subscription, {
+      billing_cycle_anchor: nextBillingAnchor(),
+      proration_behavior: "none",
+    });
+  } catch (err) {
+    console.error("Failed to reschedule billing anchor:", err.message);
+  }
+}
+
 // Stripe's signature check needs the exact raw bytes Stripe sent — reading
 // the request stream directly, before anything touches req.body, keeps
 // Vercel's lazy JSON parsing from ever running on this request.
@@ -117,6 +151,7 @@ module.exports = async (req, res) => {
       const session = event.data.object;
       if (session.mode === "subscription" && session.payment_status === "paid") {
         await upsertMemberFromSession(session);
+        await alignBillingToThe15th(stripe, session);
       } else if (session.mode === "payment" && session.payment_status === "paid") {
         await applyPaidBoost(session);
       }
