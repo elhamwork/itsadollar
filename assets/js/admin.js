@@ -104,8 +104,8 @@
     pastList.innerHTML = "";
     try {
       var res = await fetch("/api/admin/cycles");
-      if (!res.ok) throw new Error("Couldn't load cycles.");
-      var data = await res.json();
+      var data = await res.json().catch(function () { return null; });
+      if (!res.ok) throw new Error((data && data.error) || "Couldn't load cycles (HTTP " + res.status + ").");
       var open = data.cycles.find(function (c) {
         return c.status === "open";
       });
