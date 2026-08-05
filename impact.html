@@ -80,6 +80,15 @@
     </div>
   </section>
 
+  <section class="section section--light" id="current-cycle-section" hidden>
+    <div class="shell">
+      <p class="eyebrow reveal">This cycle</p>
+      <h2 class="title reveal" style="--d:60ms;margin-top:.5rem" id="current-cycle-label">&nbsp;</h2>
+      <p class="lede reveal" style="--d:120ms;margin-top:.75rem">Members vote with a link sent to their email. Here&rsquo;s where it stands right now.</p>
+      <div class="donation-list reveal" style="--d:180ms" id="current-cycle-tallies" aria-live="polite"></div>
+    </div>
+  </section>
+
   <section class="section section--light">
     <div class="shell">
       <p class="eyebrow reveal">Where it went</p>
@@ -121,6 +130,7 @@
 </footer>
 
 <script src="assets/js/site.js" defer></script>
+<script src="assets/js/current-cycle.js" defer></script>
 <script src="assets/js/donations.js" defer></script>
 </body>
 </html>

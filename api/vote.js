@@ -14,10 +14,53 @@ module.exports = async (req, res) => {
       return submit(req, res);
     case "boost":
       return boost(req, res);
+    case "current":
+      return current(req, res);
     default:
       return res.status(404).json({ error: "Unknown vote action." });
   }
 };
+
+// GET ?action=current — public, no token needed. Powers the "This cycle"
+// section on impact.html: the open cycle's causes and their live point
+// totals, so anyone can see standings without being a member.
+async function current(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  try {
+    const { rows: cycleRows } = await sql`
+      select id, label from cycles where status = 'open' order by created_at desc limit 1
+    `;
+    if (cycleRows.length === 0) {
+      return res.status(200).json({ cycle: null });
+    }
+    const cycle = cycleRows[0];
+
+    const { rows: causes } = await sql`
+      select id, name from causes where cycle_id = ${cycle.id} order by id asc
+    `;
+    const { rows: tallies } = await sql`
+      select cause_id, sum(weight)::int as total
+      from votes where cycle_id = ${cycle.id} group by cause_id
+    `;
+
+    res.status(200).json({
+      cycle: {
+        label: cycle.label,
+        causes: causes.map((c) => {
+          const t = tallies.find((row) => row.cause_id === c.id);
+          return { name: c.name, voteTotal: t ? t.total : 0 };
+        }),
+      },
+    });
+  } catch (err) {
+    console.error("Failed to load current cycle:", err.message);
+    res.status(500).json({ error: "Couldn't load the current cycle." });
+  }
+}
 
 // GET ?action=context&token=... — what vote.html needs to render: the
 // cycle's causes, this member's points balance, and their current pick +
