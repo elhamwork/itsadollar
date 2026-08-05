@@ -1,4 +1,4 @@
-const Stripe = require("stripe");
+const { getStripeClient } = require("../lib/stripeClient");
 const { getBaseUrl } = require("../lib/baseUrl");
 
 const BILLING_DAY = 15;
@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
   const referralCode =
     typeof referredBy === "string" ? referredBy.trim().slice(0, 32) : "";
 
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
+  const stripe = getStripeClient();
   const baseUrl = getBaseUrl(req);
 
   try {

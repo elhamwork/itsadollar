@@ -1,4 +1,4 @@
-const Stripe = require("stripe");
+const { getStripeClient } = require("../lib/stripeClient");
 const { sql } = require("../lib/db");
 const { verifyVoteToken } = require("../lib/voteToken");
 const { getBaseUrl } = require("../lib/baseUrl");
@@ -270,7 +270,7 @@ async function payBoost(req, res) {
       return res.status(404).json({ error: "Member not found." });
     }
 
-    const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
+    const stripe = getStripeClient();
     const baseUrl = getBaseUrl(req);
     const returnUrl = `${baseUrl}/vote.html?token=${encodeURIComponent(token)}`;
 

@@ -1,4 +1,4 @@
-const Stripe = require("stripe");
+const { getStripeClient } = require("../lib/stripeClient");
 const { sql } = require("../lib/db");
 
 // Used by success.html to greet the member by name and, once the webhook
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: "Missing session_id." });
   }
 
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 3 });
+  const stripe = getStripeClient();
 
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
