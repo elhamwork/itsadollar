@@ -1,4 +1,4 @@
-const { getStripeClient } = require("../lib/stripeClient");
+const { getStripeClient, describeStripeError } = require("../lib/stripeClient");
 const { sql } = require("../lib/db");
 const { verifyVoteToken } = require("../lib/voteToken");
 const { getBaseUrl } = require("../lib/baseUrl");
@@ -303,7 +303,8 @@ async function payBoost(req, res) {
 
     res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("Failed to create boost payment:", err.message);
-    res.status(500).json({ error: "Couldn't start payment: " + err.message });
+    const detail = describeStripeError(err);
+    console.error("Failed to create boost payment:", detail);
+    res.status(500).json({ error: "Couldn't start payment: " + detail });
   }
 }

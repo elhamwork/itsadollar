@@ -1,4 +1,4 @@
-const { getStripeClient } = require("../lib/stripeClient");
+const { getStripeClient, describeStripeError } = require("../lib/stripeClient");
 const { getBaseUrl } = require("../lib/baseUrl");
 
 const BILLING_DAY = 15;
@@ -82,7 +82,8 @@ module.exports = async (req, res) => {
 
     res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("Failed to create checkout session:", err.message);
-    res.status(500).json({ error: "Couldn't start checkout: " + err.message });
+    const detail = describeStripeError(err);
+    console.error("Failed to create checkout session:", detail);
+    res.status(500).json({ error: "Couldn't start checkout: " + detail });
   }
 };

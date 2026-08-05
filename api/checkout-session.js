@@ -1,4 +1,4 @@
-const { getStripeClient } = require("../lib/stripeClient");
+const { getStripeClient, describeStripeError } = require("../lib/stripeClient");
 const { sql } = require("../lib/db");
 
 // Used by success.html to greet the member by name and, once the webhook
@@ -49,7 +49,8 @@ module.exports = async (req, res) => {
 
     res.status(200).json(result);
   } catch (err) {
-    console.error("Failed to retrieve checkout session:", err.message);
-    res.status(500).json({ error: "Couldn't retrieve that session: " + err.message });
+    const detail = describeStripeError(err);
+    console.error("Failed to retrieve checkout session:", detail);
+    res.status(500).json({ error: "Couldn't retrieve that session: " + detail });
   }
 };
