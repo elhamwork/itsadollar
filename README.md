@@ -116,13 +116,19 @@ vercel --prod
 1. Go to `/admin.html`, log in, and open a cycle with 2–4 cause names.
 2. On the 15th, Vercel Cron (configured in `vercel.json`) automatically
    emails every member a link to `/vote.html` shortly after that day's
-   charges land.
+   charges land. You can also click **Send vote emails now** on the open
+   cycle's panel to send them immediately instead of waiting.
 3. Members vote (weight 1) and can spend any points they have to boost
-   their own pick further — 1 point = +1 weight. `/admin.html` shows live
+   their own pick further — 1 point = +1 weight, or they can pay directly
+   ($1 = +1 weight) without needing points at all. `/admin.html` shows live
    tallies with the leading cause highlighted while the cycle is open.
 4. When you've actually sent the money, go back to `/admin.html`, pick the
    winning cause, enter the amount and a proof link, and close the cycle.
    It immediately appears on `/impact.html`.
+
+`/admin.html` also has a **Send an announcement** panel — write a subject
+and message and it goes out to every current member, for anything outside
+the monthly vote cycle (updates, news, anything you want to tell everyone).
 
 Only one cycle can be open at a time — close the current one before
 opening the next.

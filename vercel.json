@@ -1,6 +1,7 @@
 {
   "crons": [{ "path": "/api/cron/send-vote-emails", "schedule": "0 16 15 * *" }],
   "functions": {
-    "api/cron/send-vote-emails.js": { "maxDuration": 60 }
+    "api/cron/send-vote-emails.js": { "maxDuration": 60 },
+    "api/admin.js": { "maxDuration": 60 }
   }
 }

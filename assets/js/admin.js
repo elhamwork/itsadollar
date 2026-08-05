@@ -18,6 +18,7 @@
     loginSection.hidden = true;
     dashboardSection.hidden = false;
     loadCycles();
+    loadMemberCount();
   }
 
   function centsToDollars(cents) {
@@ -167,6 +168,11 @@
         ? "Vote-link emails sent " + new Date(cycle.emails_sent_at).toLocaleString() + "."
         : "Vote-link emails haven&rsquo;t gone out yet &mdash; they send automatically on the 15th.") +
       "</p>" +
+      '<button type="button" class="btn btn--quiet" id="send-emails-btn">' +
+      (cycle.emails_sent_at ? "Send vote emails again now" : "Send vote emails now") +
+      "</button>" +
+      '<p class="error" id="send-emails-error" role="alert"></p>' +
+      '<p class="fine" id="send-emails-result"></p>' +
       tallyListHtml(cycle.causes) +
       '<h3 class="title" style="margin-top:2rem">Close this cycle</h3>' +
       '<form class="form" id="close-cycle-form">' +
@@ -187,6 +193,42 @@
     document.getElementById("close-cycle-form").addEventListener("submit", function (e) {
       onCloseCycle(e, cycle.id);
     });
+
+    document.getElementById("send-emails-btn").addEventListener("click", function () {
+      onSendVoteEmails(this);
+    });
+  }
+
+  async function onSendVoteEmails(btn) {
+    var errEl = document.getElementById("send-emails-error");
+    var resultEl = document.getElementById("send-emails-result");
+    errEl.textContent = "";
+    resultEl.textContent = "";
+
+    if (!confirm("Send the vote-link email to every member right now?")) return;
+
+    btn.disabled = true;
+    var originalText = btn.textContent;
+    btn.textContent = "Sending…";
+
+    try {
+      var res = await fetch("/api/admin?action=send-vote-emails", { method: "POST" });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't send vote emails.");
+      if (data.note) {
+        resultEl.textContent = data.note;
+      } else {
+        var msg = "Sent to " + data.sent + " member" + (data.sent === 1 ? "" : "s") + ".";
+        if (data.failed) msg += " " + data.failed + " failed.";
+        resultEl.textContent = msg;
+      }
+      loadCycles();
+    } catch (err) {
+      errEl.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   }
 
   async function onCreateCycle(e) {
@@ -263,6 +305,62 @@
       })
       .join("");
   }
+
+  var announceCountEl = document.getElementById("announce-count");
+  var announceForm = document.getElementById("announce-form");
+  var announceError = document.getElementById("announce-error");
+  var announceResult = document.getElementById("announce-result");
+  var memberTotal = 0;
+
+  async function loadMemberCount() {
+    try {
+      var res = await fetch("/api/admin?action=member-count");
+      var data = await res.json();
+      if (res.ok) {
+        memberTotal = data.count;
+        announceCountEl.textContent =
+          memberTotal + " member" + (memberTotal === 1 ? "" : "s") + " will receive this.";
+      }
+    } catch {
+      /* Count is a nice-to-have; the send button still works without it. */
+    }
+  }
+
+  announceForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    announceError.textContent = "";
+    announceResult.textContent = "";
+
+    var subject = document.getElementById("announce-subject").value.trim();
+    var message = document.getElementById("announce-message").value.trim();
+
+    if (!confirm("Send this to " + memberTotal + " member" + (memberTotal === 1 ? "" : "s") + "? This can't be undone.")) {
+      return;
+    }
+
+    var submitBtn = announceForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending…";
+
+    try {
+      var res = await fetch("/api/admin?action=send-announcement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: subject, message: message }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't send the announcement.");
+      var msg = "Sent to " + data.sent + " member" + (data.sent === 1 ? "" : "s") + ".";
+      if (data.failed) msg += " " + data.failed + " failed.";
+      announceResult.textContent = msg;
+      announceForm.reset();
+    } catch (err) {
+      announceError.textContent = err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Send to every member";
+    }
+  });
 
   checkSession();
 })();

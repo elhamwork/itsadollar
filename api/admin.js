@@ -1,6 +1,9 @@
 const crypto = require("crypto");
 const { sql } = require("../lib/db");
 const { requireAdmin, createSessionToken } = require("../lib/adminAuth");
+const { getBaseUrl } = require("../lib/baseUrl");
+const { sendVoteEmailsForOpenCycle } = require("../lib/sendVoteEmails");
+const { sendEmail } = require("../lib/email");
 
 // Every admin operation lives in this one file (dispatched by ?action=) so
 // the whole admin surface counts as a single serverless function — Vercel's
@@ -20,6 +23,12 @@ module.exports = async (req, res) => {
       return cycles(req, res);
     case "close-cycle":
       return closeCycle(req, res);
+    case "send-vote-emails":
+      return sendVoteEmailsNow(req, res);
+    case "send-announcement":
+      return sendAnnouncement(req, res);
+    case "member-count":
+      return memberCount(req, res);
     default:
       return res.status(404).json({ error: "Unknown admin action." });
   }
@@ -226,5 +235,98 @@ async function closeCycle(req, res) {
   } catch (err) {
     console.error("Failed to close cycle:", err.message);
     res.status(500).json({ error: "Couldn't close the cycle: " + err.message });
+  }
+}
+
+// Manually triggers the vote-link email for the open cycle right now,
+// instead of waiting for the 15th's cron. See lib/sendVoteEmails.js.
+async function sendVoteEmailsNow(req, res) {
+  if (!requireAdmin(req, res)) return;
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(500).json({ error: "Email isn't configured on this deployment." });
+  }
+
+  try {
+    const result = await sendVoteEmailsForOpenCycle(getBaseUrl(req), { force: true });
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Failed to send vote emails:", err.message);
+    res.status(500).json({ error: "Couldn't send vote emails: " + err.message });
+  }
+}
+
+// Broadcasts a one-off announcement (subject + message) to every member.
+async function sendAnnouncement(req, res) {
+  if (!requireAdmin(req, res)) return;
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(500).json({ error: "Email isn't configured on this deployment." });
+  }
+
+  const { subject, message } = req.body || {};
+  if (!subject || typeof subject !== "string" || !subject.trim()) {
+    return res.status(400).json({ error: "A subject is required." });
+  }
+  if (!message || typeof message !== "string" || !message.trim()) {
+    return res.status(400).json({ error: "A message is required." });
+  }
+
+  try {
+    const { rows: members } = await sql`select email, first_name from members`;
+    const html = message
+      .trim()
+      .split(/\n{2,}/)
+      .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+
+    let sent = 0;
+    let failed = 0;
+    for (const member of members) {
+      try {
+        const greeting = member.first_name ? `Hi ${member.first_name},` : "Hi,";
+        await sendEmail({
+          to: member.email,
+          subject: subject.trim(),
+          html: `<p>${greeting}</p>${html}<p>It's a Dollar</p>`,
+          text: `${greeting}\n\n${message.trim()}\n\nIt's a Dollar`,
+        });
+        sent += 1;
+      } catch (err) {
+        failed += 1;
+        console.error(`Failed to email member ${member.email}:`, err.message);
+      }
+    }
+
+    res.status(200).json({ sent, failed });
+  } catch (err) {
+    console.error("Failed to send announcement:", err.message);
+    res.status(500).json({ error: "Couldn't send the announcement: " + err.message });
+  }
+}
+
+// Lets the admin panel show "this will email N members" before sending.
+async function memberCount(req, res) {
+  if (!requireAdmin(req, res)) return;
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+  try {
+    const { rows } = await sql`select count(*)::int as count from members`;
+    res.status(200).json({ count: rows[0].count });
+  } catch (err) {
+    console.error("Failed to count members:", err.message);
+    res.status(500).json({ error: "Couldn't count members: " + err.message });
   }
 }

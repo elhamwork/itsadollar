@@ -50,6 +50,26 @@
 
       <h2 class="title admin__subhead">Past cycles</h2>
       <div id="past-cycles"></div>
+
+      <h2 class="title admin__subhead">Send an announcement</h2>
+      <div class="admin-panel">
+        <p class="step-panel__note" id="announce-count"></p>
+        <form class="form" id="announce-form">
+          <div class="field-group">
+            <div class="input-wrap">
+              <input class="input" type="text" id="announce-subject" placeholder=" " required>
+              <label class="input-label" for="announce-subject">Subject</label>
+            </div>
+            <div class="input-wrap">
+              <textarea class="input" id="announce-message" placeholder=" " rows="6" required style="resize:vertical;min-height:9rem;padding-top:1.5rem"></textarea>
+              <label class="input-label" for="announce-message">Message</label>
+            </div>
+          </div>
+          <p class="error" id="announce-error" role="alert"></p>
+          <p class="fine" id="announce-result"></p>
+          <div class="form__actions"><button type="submit" class="btn btn--lg btn--block">Send to every member</button></div>
+        </form>
+      </div>
     </section>
 
   </div>
