@@ -64,7 +64,7 @@
 
   async function checkSession() {
     try {
-      var res = await fetch("/api/admin/session");
+      var res = await fetch("/api/admin?action=session");
       if (res.ok) showDashboard();
       else showLogin();
     } catch {
@@ -77,7 +77,7 @@
     loginError.textContent = "";
     var password = document.getElementById("admin-password").value;
     try {
-      var res = await fetch("/api/admin/login", {
+      var res = await fetch("/api/admin?action=login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: password }),
@@ -95,7 +95,7 @@
   });
 
   logoutBtn.addEventListener("click", async function () {
-    await fetch("/api/admin/logout", { method: "POST" }).catch(function () {});
+    await fetch("/api/admin?action=logout", { method: "POST" }).catch(function () {});
     showLogin();
   });
 
@@ -103,7 +103,7 @@
     openPanel.innerHTML = "<p>Loading&hellip;</p>";
     pastList.innerHTML = "";
     try {
-      var res = await fetch("/api/admin/cycles");
+      var res = await fetch("/api/admin?action=cycles");
       var data = await res.json().catch(function () { return null; });
       if (!res.ok) throw new Error((data && data.error) || "Couldn't load cycles (HTTP " + res.status + ").");
       var open = data.cycles.find(function (c) {
@@ -198,7 +198,7 @@
       .filter(Boolean);
 
     try {
-      var res = await fetch("/api/admin/cycles", {
+      var res = await fetch("/api/admin?action=cycles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -220,7 +220,7 @@
     errEl.textContent = "";
 
     try {
-      var res = await fetch("/api/admin/close-cycle", {
+      var res = await fetch("/api/admin?action=close-cycle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -109,7 +109,7 @@
     submitBtn.textContent = "Casting your vote…";
 
     try {
-      var res = await fetch("/api/vote/submit", {
+      var res = await fetch("/api/vote?action=submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token, causeId: selectedCauseId }),
@@ -139,7 +139,7 @@
     boostBtn.textContent = "Boosting…";
 
     try {
-      var res = await fetch("/api/vote/boost", {
+      var res = await fetch("/api/vote?action=boost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token, points: points }),
@@ -164,7 +164,7 @@
       return;
     }
     try {
-      var res = await fetch("/api/vote/context?token=" + encodeURIComponent(token));
+      var res = await fetch("/api/vote?action=context&token=" + encodeURIComponent(token));
       var data = await res.json();
       if (!res.ok) {
         showInvalid(data.error);
