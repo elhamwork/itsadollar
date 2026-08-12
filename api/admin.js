@@ -39,6 +39,8 @@ module.exports = async (req, res) => {
       return listMembers(req, res);
     case "add-test-member":
       return addTestMember(req, res);
+    case "test-email":
+      return testEmail(req, res);
     default:
       return res.status(404).json({ error: "Unknown admin action." });
   }
@@ -403,5 +405,42 @@ async function addTestMember(req, res) {
   } catch (err) {
     console.error("Failed to add test member:", err.message);
     res.status(500).json({ error: "Couldn't add test member: " + err.message });
+  }
+}
+
+// Sends one real email straight through lib/email.js and returns the exact
+// success/failure — including the raw provider error message — in the
+// response body. Unlike the bulk-send actions (which swallow individual
+// errors behind a sent/failed count so one bad address doesn't hide the
+// rest), this exists purely so a misconfigured BREVO_API_KEY or unverified
+// EMAIL_FROM sender shows up right in the browser instead of requiring a
+// trip into Vercel's function logs.
+async function testEmail(req, res) {
+  if (!requireAdmin(req, res)) return;
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  const { to } = req.body || {};
+  if (!to || typeof to !== "string" || !to.trim()) {
+    return res.status(400).json({ error: "An email address is required." });
+  }
+
+  if (!process.env.BREVO_API_KEY) {
+    return res.status(500).json({ error: "BREVO_API_KEY isn't set on this deployment." });
+  }
+
+  try {
+    await sendEmail({
+      to: to.trim(),
+      subject: "Test email from It's a Dollar admin",
+      html: "<p>If you're reading this, email sending is working.</p>",
+      text: "If you're reading this, email sending is working.",
+    });
+    res.status(200).json({ ok: true, from: process.env.EMAIL_FROM || "(EMAIL_FROM not set — using fallback sender)" });
+  } catch (err) {
+    console.error("Test email failed:", err.message);
+    res.status(500).json({ error: err.message });
   }
 }

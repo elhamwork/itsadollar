@@ -51,6 +51,22 @@
       <h2 class="title admin__subhead">Past cycles</h2>
       <div id="past-cycles"></div>
 
+      <h2 class="title admin__subhead">Email debug</h2>
+      <div class="admin-panel">
+        <p class="step-panel__note">Sends one real email and shows the exact result &mdash; including the raw provider error, if any &mdash; right here, no digging through Vercel logs required.</p>
+        <form class="form" id="test-email-form">
+          <div class="field-group">
+            <div class="input-wrap">
+              <input class="input" type="email" id="test-email-to" placeholder=" " required>
+              <label class="input-label" for="test-email-to">Send test email to</label>
+            </div>
+          </div>
+          <p class="error" id="test-email-error" role="alert"></p>
+          <p class="fine" id="test-email-result"></p>
+          <div class="form__actions"><button type="submit" class="btn btn--quiet">Send test email</button></div>
+        </form>
+      </div>
+
       <h2 class="title admin__subhead">Members</h2>
 
       <div class="admin-panel">

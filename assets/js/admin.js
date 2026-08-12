@@ -443,5 +443,37 @@
     }
   });
 
+  var testEmailForm = document.getElementById("test-email-form");
+  var testEmailError = document.getElementById("test-email-error");
+  var testEmailResult = document.getElementById("test-email-result");
+
+  testEmailForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    testEmailError.textContent = "";
+    testEmailResult.textContent = "";
+
+    var submitBtn = testEmailForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending…";
+
+    try {
+      var res = await fetch("/api/admin?action=test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: document.getElementById("test-email-to").value.trim(),
+        }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't send test email.");
+      testEmailResult.textContent = "Sent from " + data.from + ". Check the inbox (and spam folder).";
+    } catch (err) {
+      testEmailError.textContent = err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Send test email";
+    }
+  });
+
   checkSession();
 })();
