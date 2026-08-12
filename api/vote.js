@@ -1,6 +1,7 @@
 const { getStripeClient, describeStripeError } = require("../lib/stripeClient");
 const { sql } = require("../lib/db");
 const { verifyVoteToken } = require("../lib/voteToken");
+const { verifyUnsubscribeToken } = require("../lib/unsubscribeToken");
 const { getBaseUrl } = require("../lib/baseUrl");
 
 const DOLLARS_PER_BOOST_POINT = 1;
@@ -22,10 +23,58 @@ module.exports = async (req, res) => {
       return payBoost(req, res);
     case "current":
       return current(req, res);
+    case "unsubscribe":
+      return unsubscribe(req, res);
     default:
       return res.status(404).json({ error: "Unknown vote action." });
   }
 };
+
+// GET ?action=unsubscribe&token=... — meant to be clicked from an email
+// client, so it returns a small HTML page directly rather than JSON.
+// Opts a member out of announcement emails only; the monthly vote link is
+// part of membership itself, not a newsletter, so it isn't affected.
+function unsubscribePage(title, message) {
+  return (
+    "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">" +
+    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+    "<title>" + title + " — It's a Dollar</title>" +
+    "<style>body{font-family:system-ui,-apple-system,sans-serif;max-width:28rem;" +
+    "margin:18vh auto 0;padding:0 1.5rem;text-align:center;color:#111113}" +
+    "a{color:#0066cc}</style></head><body>" +
+    "<h1>" + title + "</h1><p>" + message + "</p><p><a href=\"/\">Back to It&rsquo;s a Dollar</a></p>" +
+    "</body></html>"
+  );
+}
+
+async function unsubscribe(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).send("Method not allowed.");
+  }
+
+  const memberId = verifyUnsubscribeToken((req.query || {}).token);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+  if (!memberId) {
+    return res.status(400).send(unsubscribePage("Link not valid", "This unsubscribe link doesn&rsquo;t look right."));
+  }
+
+  try {
+    await sql`update members set unsubscribed = true where id = ${memberId}`;
+    return res
+      .status(200)
+      .send(
+        unsubscribePage(
+          "You&rsquo;re unsubscribed.",
+          "You won&rsquo;t get announcement emails anymore. You&rsquo;ll still get your monthly link to vote on where the money goes &mdash; that&rsquo;s part of membership, not a newsletter."
+        )
+      );
+  } catch (err) {
+    console.error("Unsubscribe failed:", err.message);
+    return res.status(500).send(unsubscribePage("Something went wrong", "Please try again in a moment."));
+  }
+}
 
 // GET ?action=current — public, no token needed. Powers the "This cycle"
 // section on impact.html: the open cycle's causes and their live point

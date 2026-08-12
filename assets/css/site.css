@@ -942,6 +942,16 @@ body.is-locked {
   color: var(--ink);
 }
 
+.footer__bottom a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.footer__bottom a:hover {
+  color: var(--ink);
+}
+
 .footer__bottom {
   display: flex;
   flex-wrap: wrap;
@@ -1505,6 +1515,44 @@ body.is-locked {
 
 .admin-past-row:last-child {
   border-bottom: 0;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0 0.75rem 0.75rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.75rem 0.75rem 0.75rem 0;
+  border-top: 1px solid var(--line);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table td:first-child,
+.admin-table th:first-child {
+  padding-left: 0;
+}
+
+.admin-table tr.is-unsubscribed td {
+  color: var(--ink-quiet);
 }
 
 /* ---------- Reveal ------------------------------------------------------ */

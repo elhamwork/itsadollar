@@ -8,6 +8,7 @@
   var logoutBtn = document.getElementById("logout-btn");
   var openPanel = document.getElementById("open-cycle-panel");
   var pastList = document.getElementById("past-cycles");
+  var membersPanel = document.getElementById("members-panel");
 
   function showLogin() {
     loginSection.hidden = false;
@@ -19,6 +20,7 @@
     dashboardSection.hidden = false;
     loadCycles();
     loadMemberCount();
+    loadMembers();
   }
 
   function centsToDollars(cents) {
@@ -99,6 +101,46 @@
     await fetch("/api/admin?action=logout", { method: "POST" }).catch(function () {});
     showLogin();
   });
+
+  async function loadMembers() {
+    membersPanel.innerHTML = "<p>Loading&hellip;</p>";
+    try {
+      var res = await fetch("/api/admin?action=members");
+      var data = await res.json().catch(function () { return null; });
+      if (!res.ok) throw new Error((data && data.error) || "Couldn't load members (HTTP " + res.status + ").");
+
+      if (data.members.length === 0) {
+        membersPanel.innerHTML = '<p class="step-panel__note">No members yet.</p>';
+        return;
+      }
+
+      var rows = data.members
+        .map(function (m) {
+          var name = [m.first_name, m.last_name].filter(Boolean).join(" ") || "&mdash;";
+          var joined = new Date(m.created_at).toLocaleDateString();
+          var status = m.unsubscribed ? "Unsubscribed" : "Subscribed";
+          return (
+            '<tr class="' + (m.unsubscribed ? "is-unsubscribed" : "") + '">' +
+            "<td>" + escapeHtml(name) + "</td>" +
+            "<td>" + escapeHtml(m.email) + "</td>" +
+            "<td>" + m.points + "</td>" +
+            "<td>" + m.referral_count + "</td>" +
+            "<td>" + escapeHtml(m.referral_code) + "</td>" +
+            "<td>" + joined + "</td>" +
+            "<td>" + status + "</td>" +
+            "</tr>"
+          );
+        })
+        .join("");
+
+      membersPanel.innerHTML =
+        '<table class="admin-table"><thead><tr>' +
+        "<th>Name</th><th>Email</th><th>Points</th><th>Referrals</th><th>Referral code</th><th>Joined</th><th>Status</th>" +
+        "</tr></thead><tbody>" + rows + "</tbody></table>";
+    } catch (err) {
+      membersPanel.innerHTML = '<p class="error">' + escapeHtml(err.message) + "</p>";
+    }
+  }
 
   async function loadCycles() {
     openPanel.innerHTML = "<p>Loading&hellip;</p>";
@@ -334,6 +376,7 @@
     var subject = document.getElementById("announce-subject").value.trim();
     var message = document.getElementById("announce-message").value.trim();
 
+    await loadMemberCount(); // refresh right before confirming — the count shown at page load may be stale by now
     if (!confirm("Send this to " + memberTotal + " member" + (memberTotal === 1 ? "" : "s") + "? This can't be undone.")) {
       return;
     }

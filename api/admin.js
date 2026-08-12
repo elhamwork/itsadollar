@@ -4,6 +4,11 @@ const { requireAdmin, createSessionToken } = require("../lib/adminAuth");
 const { getBaseUrl } = require("../lib/baseUrl");
 const { sendVoteEmailsForOpenCycle } = require("../lib/sendVoteEmails");
 const { sendEmail } = require("../lib/email");
+const { sendInBatches } = require("../lib/sendBatch");
+const { escapeHtml } = require("../lib/escapeHtml");
+const { createUnsubscribeToken } = require("../lib/unsubscribeToken");
+
+const ANNOUNCEMENT_BATCH_SIZE = 10;
 
 // Every admin operation lives in this one file (dispatched by ?action=) so
 // the whole admin surface counts as a single serverless function — Vercel's
@@ -29,6 +34,8 @@ module.exports = async (req, res) => {
       return sendAnnouncement(req, res);
     case "member-count":
       return memberCount(req, res);
+    case "members":
+      return listMembers(req, res);
     default:
       return res.status(404).json({ error: "Unknown admin action." });
   }
@@ -283,30 +290,33 @@ async function sendAnnouncement(req, res) {
   }
 
   try {
-    const { rows: members } = await sql`select email, first_name from members`;
-    const html = message
-      .trim()
+    const { rows: members } = await sql`
+      select id, email, first_name from members where unsubscribed = false
+    `;
+    const trimmedMessage = message.trim();
+    const safeHtml = escapeHtml(trimmedMessage)
       .split(/\n{2,}/)
       .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
       .join("");
+    const baseUrl = getBaseUrl(req);
 
-    let sent = 0;
-    let failed = 0;
-    for (const member of members) {
+    const { sent, failed } = await sendInBatches(members, ANNOUNCEMENT_BATCH_SIZE, async (member) => {
+      const safeName = escapeHtml(member.first_name);
+      const greeting = member.first_name ? `Hi ${safeName},` : "Hi,";
+      const plainGreeting = member.first_name ? `Hi ${member.first_name},` : "Hi,";
+      const unsubUrl = `${baseUrl}/api/vote?action=unsubscribe&token=${createUnsubscribeToken(member.id)}`;
       try {
-        const greeting = member.first_name ? `Hi ${member.first_name},` : "Hi,";
         await sendEmail({
           to: member.email,
           subject: subject.trim(),
-          html: `<p>${greeting}</p>${html}<p>It's a Dollar</p>`,
-          text: `${greeting}\n\n${message.trim()}\n\nIt's a Dollar`,
+          html: `<p>${greeting}</p>${safeHtml}<p>It's a Dollar</p><p style="font-size:12px;color:#888"><a href="${unsubUrl}">Unsubscribe from announcements</a></p>`,
+          text: `${plainGreeting}\n\n${trimmedMessage}\n\nIt's a Dollar\n\nUnsubscribe from announcements: ${unsubUrl}`,
         });
-        sent += 1;
       } catch (err) {
-        failed += 1;
         console.error(`Failed to email member ${member.email}:`, err.message);
+        throw err;
       }
-    }
+    });
 
     res.status(200).json({ sent, failed });
   } catch (err) {
@@ -323,10 +333,36 @@ async function memberCount(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   }
   try {
-    const { rows } = await sql`select count(*)::int as count from members`;
+    const { rows } = await sql`select count(*)::int as count from members where unsubscribed = false`;
     res.status(200).json({ count: rows[0].count });
   } catch (err) {
     console.error("Failed to count members:", err.message);
     res.status(500).json({ error: "Couldn't count members: " + err.message });
+  }
+}
+
+// Full member list for the admin dashboard — most recent first, capped at
+// 500 (plenty for this project's scale; a real pagination UI can come later
+// if it's ever needed).
+async function listMembers(req, res) {
+  if (!requireAdmin(req, res)) return;
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+  try {
+    const { rows } = await sql`
+      select
+        m.id, m.email, m.first_name, m.last_name, m.points, m.referral_code,
+        m.unsubscribed, m.created_at,
+        (select count(*)::int from referrals where referrer_member_id = m.id) as referral_count
+      from members m
+      order by m.created_at desc
+      limit 500
+    `;
+    res.status(200).json({ members: rows });
+  } catch (err) {
+    console.error("Failed to load members:", err.message);
+    res.status(500).json({ error: "Couldn't load members: " + err.message });
   }
 }

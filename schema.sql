@@ -10,6 +10,7 @@ create table if not exists members (
   referral_code text unique not null,
   referred_by_member_id integer references members(id),
   points integer not null default 0,
+  unsubscribed boolean not null default false,
   created_at timestamptz not null default now()
 );
 

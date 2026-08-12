@@ -15,8 +15,15 @@ serverless functions in `/api` for:
 - A public, provable **donations log** (`impact.html`) showing what was
   actually given each cycle
 - A password-protected **admin page** (`/admin.html`, not linked from the
-  site) to open a cycle with its causes, and to close a cycle by recording
-  the real donation made
+  site) to open a cycle with its causes, close a cycle by recording the
+  real donation made, view every member in a table, push vote-link emails
+  on demand instead of waiting for the 15th, and broadcast an announcement
+  to every member
+- Member **self-service** (`/manage.html`) — enter your email, get dropped
+  into Stripe's hosted billing portal to update your card or cancel,
+  without emailing anyone
+- `/terms.html` and `/privacy.html` — plain-language starting points, not
+  reviewed by a lawyer (see the note at the top of each page)
 
 ## Setup overview
 
