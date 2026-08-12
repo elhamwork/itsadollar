@@ -66,6 +66,10 @@ npm run migrate
   paid boosts (the handler branches on the session's mode) — without it,
   neither members nor paid boosts ever actually land in the database, even
   though Stripe shows the payment as successful.
+- **Customer Portal**: `/manage.html` uses Stripe's hosted Customer Portal,
+  which needs a one-time activation at
+  https://dashboard.stripe.com/test/settings/billing/portal before it'll
+  work — visiting that page and saving the default settings is enough.
 
 ### 3. Resend (vote-link emails)
 
