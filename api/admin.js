@@ -4,6 +4,7 @@ const { requireAdmin, createSessionToken } = require("../lib/adminAuth");
 const { getBaseUrl } = require("../lib/baseUrl");
 const { sendVoteEmailsForOpenCycle } = require("../lib/sendVoteEmails");
 const { sendEmail } = require("../lib/email");
+const { emailLayout } = require("../lib/emailTemplate");
 const { sendInBatches } = require("../lib/sendBatch");
 const { escapeHtml } = require("../lib/escapeHtml");
 const { createUnsubscribeToken } = require("../lib/unsubscribeToken");
@@ -314,8 +315,11 @@ async function sendAnnouncement(req, res) {
         await sendEmail({
           to: member.email,
           subject: subject.trim(),
-          html: `<p>${greeting}</p>${safeHtml}<p>It's a Dollar</p><p style="font-size:12px;color:#888"><a href="${unsubUrl}">Unsubscribe from announcements</a></p>`,
-          text: `${plainGreeting}\n\n${trimmedMessage}\n\nIt's a Dollar\n\nUnsubscribe from announcements: ${unsubUrl}`,
+          html: emailLayout({
+            bodyHtml: `<p style="margin:0 0 8px">${greeting}</p>${safeHtml}`,
+            footerHtml: `<a href="${unsubUrl}" style="color:#6e6e73">Unsubscribe from announcements</a>`,
+          }),
+          text: `${plainGreeting}\n\n${trimmedMessage}\n\nUnsubscribe from announcements: ${unsubUrl}`,
         });
       } catch (err) {
         console.error(`Failed to email member ${member.email}:`, err.message);
@@ -435,7 +439,9 @@ async function testEmail(req, res) {
     await sendEmail({
       to: to.trim(),
       subject: "Test email from It's a Dollar admin",
-      html: "<p>If you're reading this, email sending is working.</p>",
+      html: emailLayout({
+        bodyHtml: `<p style="margin:0">If you&rsquo;re reading this, email sending is working.</p>`,
+      }),
       text: "If you're reading this, email sending is working.",
     });
     res.status(200).json({ ok: true, from: process.env.EMAIL_FROM || "(EMAIL_FROM not set — using fallback sender)" });
