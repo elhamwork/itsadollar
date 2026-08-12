@@ -127,6 +127,56 @@
     });
   });
 
+  var bypassActions = document.getElementById("admin-bypass-actions");
+  var bypassNote = document.getElementById("admin-bypass-note");
+  var bypassBtn = document.getElementById("admin-bypass-btn");
+
+  if (bypassActions && bypassNote && bypassBtn) {
+    fetch(API_BASE + "/api/admin?action=session")
+      .then(function (res) {
+        if (res.ok) {
+          bypassActions.hidden = false;
+          bypassNote.hidden = false;
+        }
+      })
+      .catch(function () {
+        /* Not logged in as admin, or the check failed — leave it hidden. */
+      });
+
+    bypassBtn.addEventListener("click", function () {
+      if (!validateStep1()) {
+        fields.firstName.el.focus();
+        return;
+      }
+      startAdminBypass();
+    });
+  }
+
+  async function startAdminBypass() {
+    goTo(2);
+    if (redirectTitle) redirectTitle.textContent = "Adding you as a test member…";
+    if (redirectNote) redirectNote.textContent = "No charge — this is the admin bypass.";
+    try {
+      var res = await fetch(API_BASE + "/api/admin?action=add-test-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: fields.firstName.el.value.trim(),
+          lastName: fields.lastName.el.value.trim(),
+          email: fields.email.el.value.trim(),
+        }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't add test member.");
+      window.location.href =
+        "success.html?admin_bypass=1" +
+        "&firstName=" + encodeURIComponent(fields.firstName.el.value.trim()) +
+        "&ref=" + encodeURIComponent(data.referralCode);
+    } catch (err) {
+      showRedirectError(err.message);
+    }
+  }
+
   document.querySelectorAll("[data-back]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       goTo(1);

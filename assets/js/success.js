@@ -6,7 +6,17 @@
   var params = new URLSearchParams(window.location.search);
   var sessionId = params.get("session_id");
 
-  if (!sessionId || !nameEl) return;
+  if (!nameEl) return;
+
+  if (params.get("admin_bypass") === "1") {
+    var bypassName = params.get("firstName");
+    var bypassRef = params.get("ref");
+    if (bypassName) nameEl.textContent = bypassName;
+    if (bypassRef) showShareBlock(bypassRef);
+    return;
+  }
+
+  if (!sessionId) return;
 
   fetch(API_BASE + "/api/checkout-session?session_id=" + encodeURIComponent(sessionId))
     .then(function (res) {
