@@ -381,8 +381,15 @@ async function listMembers(req, res) {
 // Stripe customer id, which is always "cus_...") stands in for a real one.
 // For testing member-facing flows (unsubscribe, vote emails) against real
 // email delivery without running an actual Stripe checkout each time.
+//
+// TEMPORARY, PRE-LAUNCH ONLY: deliberately has no requireAdmin() check right
+// now, at the site owner's explicit request, so the "Pay as admin" button on
+// join.html works for anyone without needing to log into /admin.html first.
+// This means literally any visitor can currently create a free membership
+// with zero payment — that's fine while the site isn't public yet, but this
+// MUST have `if (!requireAdmin(req, res)) return;` put back before the site
+// actually launches, or anyone could mint unlimited free members.
 async function addTestMember(req, res) {
-  if (!requireAdmin(req, res)) return;
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed." });
