@@ -7,6 +7,7 @@ const { sendEmail } = require("../lib/email");
 const { sendInBatches } = require("../lib/sendBatch");
 const { escapeHtml } = require("../lib/escapeHtml");
 const { createUnsubscribeToken } = require("../lib/unsubscribeToken");
+const { generateUniqueReferralCode } = require("../lib/referralCode");
 
 const ANNOUNCEMENT_BATCH_SIZE = 10;
 
@@ -36,6 +37,8 @@ module.exports = async (req, res) => {
       return memberCount(req, res);
     case "members":
       return listMembers(req, res);
+    case "add-test-member":
+      return addTestMember(req, res);
     default:
       return res.status(404).json({ error: "Unknown admin action." });
   }
@@ -364,5 +367,41 @@ async function listMembers(req, res) {
   } catch (err) {
     console.error("Failed to load members:", err.message);
     res.status(500).json({ error: "Couldn't load members: " + err.message });
+  }
+}
+
+// Creates a member with no real payment behind it — a synthetic
+// stripe_customer_id (prefixed "test_", so it can never collide with a real
+// Stripe customer id, which is always "cus_...") stands in for a real one.
+// For testing member-facing flows (unsubscribe, vote emails) against real
+// email delivery without running an actual Stripe checkout each time.
+async function addTestMember(req, res) {
+  if (!requireAdmin(req, res)) return;
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  const { firstName, lastName, email, points } = req.body || {};
+  if (!firstName || !lastName || !email || typeof email !== "string" || !email.trim()) {
+    return res.status(400).json({ error: "First name, last name, and email are required." });
+  }
+
+  const startingPoints = Number.isInteger(Number(points)) && Number(points) >= 0 ? Number(points) : 0;
+
+  try {
+    const testCustomerId = "test_" + crypto.randomBytes(8).toString("hex");
+    const referralCode = await generateUniqueReferralCode();
+
+    const { rows } = await sql`
+      insert into members (stripe_customer_id, email, first_name, last_name, referral_code, points)
+      values (${testCustomerId}, ${email.trim()}, ${firstName.trim()}, ${lastName.trim()}, ${referralCode}, ${startingPoints})
+      returning id
+    `;
+
+    res.status(200).json({ ok: true, memberId: rows[0].id, referralCode });
+  } catch (err) {
+    console.error("Failed to add test member:", err.message);
+    res.status(500).json({ error: "Couldn't add test member: " + err.message });
   }
 }

@@ -405,5 +405,43 @@
     }
   });
 
+  var testMemberForm = document.getElementById("test-member-form");
+  var testMemberError = document.getElementById("test-member-error");
+  var testMemberResult = document.getElementById("test-member-result");
+
+  testMemberForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    testMemberError.textContent = "";
+    testMemberResult.textContent = "";
+
+    var submitBtn = testMemberForm.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Adding…";
+
+    try {
+      var res = await fetch("/api/admin?action=add-test-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: document.getElementById("test-first-name").value.trim(),
+          lastName: document.getElementById("test-last-name").value.trim(),
+          email: document.getElementById("test-email").value.trim(),
+          points: document.getElementById("test-points").value,
+        }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't add test member.");
+      testMemberResult.textContent = "Added — referral code " + data.referralCode + ".";
+      testMemberForm.reset();
+      loadMembers();
+      loadMemberCount();
+    } catch (err) {
+      testMemberError.textContent = err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Add test member";
+    }
+  });
+
   checkSession();
 })();

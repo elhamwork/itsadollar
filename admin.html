@@ -52,6 +52,36 @@
       <div id="past-cycles"></div>
 
       <h2 class="title admin__subhead">Members</h2>
+
+      <div class="admin-panel">
+        <p class="step-panel__note">Adds a member with no real payment behind it &mdash; for testing vote emails, unsubscribe, and boosting without running an actual checkout.</p>
+        <form class="form" id="test-member-form">
+          <div class="field-group">
+            <div class="field-row">
+              <div class="input-wrap">
+                <input class="input" type="text" id="test-first-name" placeholder=" " required>
+                <label class="input-label" for="test-first-name">First name</label>
+              </div>
+              <div class="input-wrap">
+                <input class="input" type="text" id="test-last-name" placeholder=" " required>
+                <label class="input-label" for="test-last-name">Last name</label>
+              </div>
+            </div>
+            <div class="input-wrap">
+              <input class="input" type="email" id="test-email" placeholder=" " required>
+              <label class="input-label" for="test-email">Email</label>
+            </div>
+            <div class="input-wrap">
+              <input class="input" type="number" id="test-points" placeholder=" " min="0" step="1">
+              <label class="input-label" for="test-points">Starting points (optional)</label>
+            </div>
+          </div>
+          <p class="error" id="test-member-error" role="alert"></p>
+          <p class="fine" id="test-member-result"></p>
+          <div class="form__actions"><button type="submit" class="btn btn--quiet">Add test member</button></div>
+        </form>
+      </div>
+
       <div class="admin-panel admin-table-wrap" id="members-panel">
         <p class="step-panel__note">Loading&hellip;</p>
       </div>

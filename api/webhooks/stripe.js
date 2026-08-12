@@ -1,6 +1,6 @@
 const { getStripeClient } = require("../../lib/stripeClient");
 const { sql } = require("../../lib/db");
-const { generateReferralCode } = require("../../lib/referralCode");
+const { generateUniqueReferralCode } = require("../../lib/referralCode");
 
 const BILLING_DAY = 15;
 const BILLING_HOUR_UTC = 15; // The vote-email cron runs an hour after this.
@@ -46,15 +46,6 @@ function getRawBody(req) {
     req.on("end", () => resolve(Buffer.concat(chunks)));
     req.on("error", reject);
   });
-}
-
-async function generateUniqueReferralCode() {
-  for (let i = 0; i < 5; i++) {
-    const code = generateReferralCode();
-    const { rows } = await sql`select 1 from members where referral_code = ${code}`;
-    if (rows.length === 0) return code;
-  }
-  throw new Error("Could not generate a unique referral code after 5 attempts.");
 }
 
 async function upsertMemberFromSession(session) {
