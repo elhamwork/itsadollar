@@ -127,22 +127,9 @@
     });
   });
 
-  var bypassActions = document.getElementById("admin-bypass-actions");
-  var bypassNote = document.getElementById("admin-bypass-note");
   var bypassBtn = document.getElementById("admin-bypass-btn");
 
-  if (bypassActions && bypassNote && bypassBtn) {
-    fetch(API_BASE + "/api/admin?action=session")
-      .then(function (res) {
-        if (res.ok) {
-          bypassActions.hidden = false;
-          bypassNote.hidden = false;
-        }
-      })
-      .catch(function () {
-        /* Not logged in as admin, or the check failed — leave it hidden. */
-      });
-
+  if (bypassBtn) {
     bypassBtn.addEventListener("click", function () {
       if (!validateStep1()) {
         fields.firstName.el.focus();
