@@ -258,7 +258,7 @@ async function sendVoteEmailsNow(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env.BREVO_API_KEY) {
     return res.status(500).json({ error: "Email isn't configured on this deployment." });
   }
 
@@ -280,7 +280,7 @@ async function sendAnnouncement(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env.BREVO_API_KEY) {
     return res.status(500).json({ error: "Email isn't configured on this deployment." });
   }
 

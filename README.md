@@ -28,7 +28,7 @@ serverless functions in `/api` for:
 ## Setup overview
 
 This needs four things provisioned before it fully works: Stripe (checkout
-+ webhook), a Postgres database, an email sender (Resend), and a handful of
++ webhook), a Postgres database, an email sender (Brevo), and a handful of
 generated secrets. None of these can be set up on your behalf from a chat
 session — they all require accounts only you can create. Steps below.
 
@@ -71,15 +71,17 @@ npm run migrate
   https://dashboard.stripe.com/test/settings/billing/portal before it'll
   work — visiting that page and saving the default settings is enough.
 
-### 3. Resend (vote-link emails)
+### 3. Brevo (vote-link emails)
 
-Sign up at https://resend.com (fastest via GitHub, no card) and create an
-API key → `RESEND_API_KEY`. For real delivery to arbitrary member inboxes
-(not just your own account email), verify a sending domain under **Domains**
-and set `EMAIL_FROM` to an address on it, e.g.
-`EMAIL_FROM="It's a Dollar <hello@yourdomain.org>"`. Until you do, emails
-send from Resend's shared test address and may not reliably reach inboxes
-outside your own Resend account.
+Sign up at https://www.brevo.com (free tier: 300 emails/day) and create an
+API key under **Settings → SMTP & API → API Keys** → `BREVO_API_KEY`. Then
+add a sender under **Settings → Senders, Domains & Dedicated IPs → Senders**
+— Brevo requires the exact `EMAIL_FROM` address to be a verified sender
+before it'll let you send from it (a quick email-confirmation click, no
+domain ownership needed for a single address). Set
+`EMAIL_FROM="It's a Dollar <hello@yourdomain.org>"` to that verified
+address. Sends will fail with an error from Brevo until the sender is
+verified.
 
 ### 4. Generated secrets
 
@@ -117,7 +119,7 @@ vercel env add STRIPE_WEBHOOK_SECRET
 vercel env add ADMIN_PASSWORD
 vercel env add ADMIN_SESSION_SECRET
 vercel env add VOTE_TOKEN_SECRET
-vercel env add RESEND_API_KEY
+vercel env add BREVO_API_KEY
 vercel env add CRON_SECRET
 vercel --prod
 ```
@@ -197,7 +199,7 @@ presented as "$1/month," or using a zero-fee donation platform, avoids that.
 ## What I couldn't test myself
 
 This was all built and reviewed in an environment with no outbound access
-to Stripe, Postgres, Resend, or Vercel — I verified every pure function
+to Stripe, Postgres, Brevo, or Vercel — I verified every pure function
 (token signing/verification, referral code generation) with unit-style
 checks, and every page's UI with mocked API responses, but the real,
 end-to-end path — webhook delivery, billing anchor behavior, cron firing,
