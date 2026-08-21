@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /manage.html
+Disallow: /success.html
+Disallow: /vote.html
+Disallow: /api/
+
+Sitemap: https://itsadollar.org/sitemap.xml

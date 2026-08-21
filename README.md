@@ -109,6 +109,11 @@ Environment Variables (Production + Preview + Development), or via
    your `members` table (via Vercel's Postgres dashboard, or
    `psql "$POSTGRES_URL" -c 'select * from members;'`).
 
+Every public page also loads `/_vercel/insights/script.js` for Vercel Web
+Analytics — a free, cookie-free, privacy-friendly pageview tracker with no
+banner required. It's a no-op until you flip it on: Vercel dashboard → your
+project → **Analytics** tab → **Enable**.
+
 Or via CLI, from the repo root:
 
 ```
