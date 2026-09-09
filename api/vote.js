@@ -23,6 +23,8 @@ module.exports = async (req, res) => {
       return payBoost(req, res);
     case "current":
       return current(req, res);
+    case "stats":
+      return stats(req, res);
     case "unsubscribe":
       return unsubscribe(req, res);
     default:
@@ -114,6 +116,38 @@ async function current(req, res) {
   } catch (err) {
     console.error("Failed to load current cycle:", err.message);
     res.status(500).json({ error: "Couldn't load the current cycle." });
+  }
+}
+
+// GET ?action=stats — public, no token needed. Powers the live member count
+// on index.html and the referral leaderboard on impact.html. Excludes
+// "test_"-prefixed members (created via the admin bypass on join.html, with
+// no real payment behind them) so these numbers stay honest.
+async function stats(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
+  try {
+    const { rows: countRows } = await sql`
+      select count(*)::int as count from members
+      where stripe_customer_id not like 'test_%'
+    `;
+    const { rows: topReferrers } = await sql`
+      select m.first_name, count(r.id)::int as referral_count
+      from members m
+      join referrals r on r.referrer_member_id = m.id
+      where m.stripe_customer_id not like 'test_%'
+      group by m.id, m.first_name
+      order by referral_count desc, m.id asc
+      limit 5
+    `;
+
+    res.status(200).json({ memberCount: countRows[0].count, topReferrers });
+  } catch (err) {
+    console.error("Failed to load public stats:", err.message);
+    res.status(500).json({ error: "Couldn't load stats." });
   }
 }
 

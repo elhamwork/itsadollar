@@ -669,6 +669,12 @@ body.is-locked {
   will-change: transform;
 }
 
+.field__caption {
+  margin: 1.5rem 0 0;
+  font-size: var(--caption);
+  color: var(--ink-quiet);
+}
+
 .field__dot {
   aspect-ratio: 1;
   border-radius: 50%;
