@@ -94,6 +94,36 @@
     document.querySelector(".spinner")?.setAttribute("hidden", "true");
   }
 
+  // LOCKED PRE-LAUNCH: real payments are parked, not deleted. This calls
+  // /api/waitlist instead of /api/create-checkout-session. To reopen
+  // memberships, swap this back to the startCheckout() below (kept intact)
+  // and restore the pricing markup commented out in join.html.
+  async function startWaitlistSignup() {
+    goTo(2);
+    try {
+      var res = await fetch(API_BASE + "/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: fields.firstName.el.value.trim(),
+          lastName: fields.lastName.el.value.trim(),
+          email: fields.email.el.value.trim(),
+        }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't join the waitlist.");
+      window.location.href =
+        "success.html?waitlist=1&firstName=" + encodeURIComponent(fields.firstName.el.value.trim());
+    } catch (err) {
+      showRedirectError(
+        err.message === "Failed to fetch"
+          ? "Can't reach the server right now. Please try again in a moment."
+          : err.message
+      );
+    }
+  }
+
+  // Untouched real-payment flow — see the comment on startWaitlistSignup above.
   async function startCheckout() {
     goTo(2);
     try {
@@ -122,7 +152,7 @@
 
   document.querySelectorAll("[data-next]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      if (validateStep1()) startCheckout();
+      if (validateStep1()) startWaitlistSignup();
       else fields.firstName.el.focus();
     });
   });

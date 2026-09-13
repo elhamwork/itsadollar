@@ -83,3 +83,14 @@ create table if not exists admin_login_attempts (
 );
 
 create index if not exists idx_admin_attempts_ip_time on admin_login_attempts(ip, attempted_at);
+
+-- Pre-launch: names+emails of people who want in once real payments open.
+-- Deliberately separate from members — no points, no referral code, no
+-- vote emails — this is just a list to convert once signups unlock.
+create table if not exists waitlist (
+  id serial primary key,
+  email text unique not null,
+  first_name text,
+  last_name text,
+  created_at timestamptz not null default now()
+);

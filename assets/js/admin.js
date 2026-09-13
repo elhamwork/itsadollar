@@ -9,6 +9,7 @@
   var openPanel = document.getElementById("open-cycle-panel");
   var pastList = document.getElementById("past-cycles");
   var membersPanel = document.getElementById("members-panel");
+  var waitlistPanel = document.getElementById("waitlist-panel");
 
   function showLogin() {
     loginSection.hidden = false;
@@ -21,6 +22,7 @@
     loadCycles();
     loadMemberCount();
     loadMembers();
+    loadWaitlist();
   }
 
   function centsToDollars(cents) {
@@ -139,6 +141,42 @@
         "</tr></thead><tbody>" + rows + "</tbody></table>";
     } catch (err) {
       membersPanel.innerHTML = '<p class="error">' + escapeHtml(err.message) + "</p>";
+    }
+  }
+
+  async function loadWaitlist() {
+    waitlistPanel.innerHTML = "<p>Loading&hellip;</p>";
+    try {
+      var res = await fetch("/api/admin?action=waitlist");
+      var data = await res.json().catch(function () { return null; });
+      if (!res.ok) throw new Error((data && data.error) || "Couldn't load the waitlist (HTTP " + res.status + ").");
+
+      if (data.entries.length === 0) {
+        waitlistPanel.innerHTML = '<p class="step-panel__note">No one on the waitlist yet.</p>';
+        return;
+      }
+
+      var rows = data.entries
+        .map(function (w) {
+          var joined = new Date(w.created_at).toLocaleDateString();
+          var name = [w.first_name, w.last_name].filter(Boolean).map(escapeHtml).join(" ");
+          return (
+            "<tr>" +
+            "<td>" + (name || "&mdash;") + "</td>" +
+            "<td>" + escapeHtml(w.email) + "</td>" +
+            "<td>" + joined + "</td>" +
+            "</tr>"
+          );
+        })
+        .join("");
+
+      waitlistPanel.innerHTML =
+        '<p class="step-panel__note">' + data.entries.length + " signed up.</p>" +
+        '<table class="admin-table"><thead><tr>' +
+        "<th>Name</th><th>Email</th><th>Joined</th>" +
+        "</tr></thead><tbody>" + rows + "</tbody></table>";
+    } catch (err) {
+      waitlistPanel.innerHTML = '<p class="error">' + escapeHtml(err.message) + "</p>";
     }
   }
 

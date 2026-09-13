@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Join for $1/month — It's a Dollar</title>
-<meta name="description" content="Join It's a Dollar. $1 a month, charged automatically. Cancel anytime.">
+<title>Join the waitlist — It's a Dollar</title>
+<meta name="description" content="It's a Dollar isn't open yet. Join the waitlist and we'll email you the moment $1/month memberships launch.">
 <link rel="canonical" href="https://itsadollar.org/join.html">
-<meta property="og:title" content="Join for $1/month — It's a Dollar">
-<meta property="og:description" content="Join It's a Dollar. $1 a month, charged automatically. Cancel anytime.">
+<meta property="og:title" content="Join the waitlist — It's a Dollar">
+<meta property="og:description" content="It's a Dollar isn't open yet. Join the waitlist and we'll email you the moment $1/month memberships launch.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://itsadollar.org/join.html">
 <meta property="og:image" content="https://itsadollar.org/assets/img/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Join for $1/month — It's a Dollar">
-<meta name="twitter:description" content="Join It's a Dollar. $1 a month, charged automatically. Cancel anytime.">
+<meta name="twitter:title" content="Join the waitlist — It's a Dollar">
+<meta name="twitter:description" content="It's a Dollar isn't open yet. Join the waitlist and we'll email you the moment $1/month memberships launch.">
 <meta name="twitter:image" content="https://itsadollar.org/assets/img/og-image.png">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23111113%22/><text x=%2250%22 y=%2254%22 text-anchor=%22middle%22 dominant-baseline=%22central%22 font-size=%2260%22 font-family=%22system-ui%22 font-weight=%22800%22 fill=%22%23fff%22>$</text></svg>">
@@ -43,8 +43,9 @@
 
       <!-- STEP 1 — Details -->
       <section class="step-panel" id="step-1" data-step="1">
-        <h1 class="step-panel__title" tabindex="-1">Join for $1/month.</h1>
-        <p class="step-panel__note">Just the basics. It takes about a minute.</p>
+        <p class="eyebrow" style="margin-bottom:.75rem">Not open yet</p>
+        <h1 class="step-panel__title" tabindex="-1">Join the waitlist.</h1>
+        <p class="step-panel__note">We&rsquo;re not accepting members yet &mdash; leave your name and email, and we&rsquo;ll let you know the moment $1/month memberships open.</p>
 
         <div class="form">
           <div class="field-group">
@@ -67,20 +68,23 @@
             </div>
           </div>
 
+          <!-- Locked pre-launch: real pricing/payment UI is parked here, not deleted.
+               When memberships open, restore this block, point data-next back at
+               startCheckout(), and remove the waitlist branch in checkout.js.
           <div class="amount">
             <span class="amount__label">Your monthly contribution</span>
             <span class="amount__value"><span class="js-amount">$1.35</span> <small>/month</small></span>
           </div>
-
           <label class="fee-toggle">
             <input type="checkbox" id="cover-fee" checked>
             <span>Add 35&cent; to cover the card processing fee, so the full $1 gets through.</span>
           </label>
+          -->
 
           <div class="form__actions">
-            <button type="button" class="btn btn--lg btn--block" data-next="1">Continue to payment</button>
+            <button type="button" class="btn btn--lg btn--block" data-next="1">Join the waitlist</button>
           </div>
-          <p class="fine">You&rsquo;ll pay <span class="js-amount">$1.35</span> today on Stripe&rsquo;s secure checkout (Apple Pay where available), then <span class="js-amount">$1.35</span> on the 15th of every month after. Cancel anytime.</p>
+          <p class="fine">No payment now. We&rsquo;ll only email you when $1/month memberships actually open.</p>
 
           <div class="form__actions" id="admin-bypass-actions">
             <button type="button" class="btn btn--quiet btn--block" id="admin-bypass-btn">Pay as admin (skip Stripe)</button>
@@ -89,11 +93,11 @@
         </div>
       </section>
 
-      <!-- STEP 2 — Redirecting to Stripe Checkout -->
+      <!-- STEP 2 — Submitting -->
       <section class="step-panel confirm" id="step-2" data-step="2" hidden>
         <div class="spinner" aria-hidden="true"></div>
-        <h1 class="step-panel__title" tabindex="-1" data-redirect-title>Taking you to checkout&hellip;</h1>
-        <p class="step-panel__note" data-redirect-note>You&rsquo;ll pay <span class="js-amount">$1.35</span> today, then <span class="js-amount">$1.35</span> on the 15th every month after &mdash; securely, on Stripe.</p>
+        <h1 class="step-panel__title" tabindex="-1" data-redirect-title>Adding you to the waitlist&hellip;</h1>
+        <p class="step-panel__note" data-redirect-note>Just a moment.</p>
         <p class="error" id="err-redirect" role="alert" style="text-align:center;margin-top:1.5rem"></p>
         <div class="confirm__actions" id="redirect-actions" hidden>
           <button type="button" class="btn btn--lg" data-back="2">&larr; Back to details</button>

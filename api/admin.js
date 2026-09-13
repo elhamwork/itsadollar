@@ -42,6 +42,8 @@ module.exports = async (req, res) => {
       return addTestMember(req, res);
     case "test-email":
       return testEmail(req, res);
+    case "waitlist":
+      return listWaitlist(req, res);
     default:
       return res.status(404).json({ error: "Unknown admin action." });
   }
@@ -455,5 +457,24 @@ async function testEmail(req, res) {
   } catch (err) {
     console.error("Test email failed:", err.message);
     res.status(500).json({ error: err.message });
+  }
+}
+
+// Everyone who signed up while payments were locked (see api/waitlist.js) —
+// what the admin panel's "Waitlist" section reads from.
+async function listWaitlist(req, res) {
+  if (!requireAdmin(req, res)) return;
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+  try {
+    const { rows } = await sql`
+      select id, email, first_name, last_name, created_at from waitlist order by created_at desc limit 1000
+    `;
+    res.status(200).json({ entries: rows });
+  } catch (err) {
+    console.error("Failed to load waitlist:", err.message);
+    res.status(500).json({ error: "Couldn't load the waitlist: " + err.message });
   }
 }

@@ -3,10 +3,23 @@
 
   var API_BASE = window.ITSADOLLAR_API_BASE || "";
   var nameEl = document.querySelector("[data-confirm-name]");
+  var titleEl = document.querySelector("[data-confirm-title]");
+  var noteEl = document.querySelector("[data-confirm-note]");
   var params = new URLSearchParams(window.location.search);
   var sessionId = params.get("session_id");
 
   if (!nameEl) return;
+
+  if (params.get("waitlist") === "1") {
+    var waitlistName = params.get("firstName");
+    if (titleEl) titleEl.textContent = "You’re on the list.";
+    if (noteEl) {
+      noteEl.textContent =
+        "We’ll email you" + (waitlistName ? ", " + waitlistName + "," : "") +
+        " the moment $1/month memberships open.";
+    }
+    return;
+  }
 
   if (params.get("admin_bypass") === "1") {
     var bypassName = params.get("firstName");
