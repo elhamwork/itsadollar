@@ -616,15 +616,22 @@ body.is-locked {
 /* ---------- Idea section ------------------------------------------------ */
 
 .idea {
-  position: relative;
-  overflow: hidden;
   text-align: center;
 }
 
-/* A soft glow that follows the cursor (assets/js/spotlight.js sets --spot-x/y).
+/* Any big dark statement/CTA section gets the same cursor-glow signature —
+   .idea (the "That's it." style sections) and .final (bottom CTAs). A soft
+   glow that follows the cursor (assets/js/spotlight.js sets --spot-x/y).
    Static and centered until JS moves it; invisible on touch devices, which
    never fire mousemove. */
-.idea::before {
+.idea,
+.final {
+  position: relative;
+  overflow: hidden;
+}
+
+.idea::before,
+.final::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -636,7 +643,8 @@ body.is-locked {
   pointer-events: none;
 }
 
-.idea > * {
+.idea > *,
+.final > * {
   position: relative;
 }
 
@@ -899,7 +907,7 @@ body.is-locked {
 
 .stat-row {
   display: grid;
-  gap: clamp(2.5rem, 6vw, 4rem);
+  gap: clamp(1.5rem, 3vw, 2rem);
   grid-template-columns: repeat(3, 1fr);
   margin-top: clamp(3rem, 6vw, 5rem);
   padding-top: clamp(3rem, 6vw, 4rem);
@@ -909,6 +917,38 @@ body.is-locked {
 .section--dark .stat-row,
 .section--black .stat-row {
   border-top-color: var(--line-invert);
+}
+
+/* Same bordered-card + cursor-glow treatment as .step on the homepage. */
+.stat {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 2.5vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition: border-color 0.4s var(--ease);
+}
+
+.stat:hover {
+  border-color: var(--ink);
+}
+
+.stat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgba(0, 0, 0, 0.05), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+}
+
+.stat:hover::before {
+  opacity: 1;
+}
+
+.stat > * {
+  position: relative;
 }
 
 .stat__value {

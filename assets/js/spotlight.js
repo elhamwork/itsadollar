@@ -15,10 +15,11 @@
     });
   }
 
-  var idea = document.getElementById("idea");
-  if (idea) trackCursor(idea, "--spot-x", "--spot-y");
+  document.querySelectorAll(".idea, .final").forEach(function (el) {
+    trackCursor(el, "--spot-x", "--spot-y");
+  });
 
-  document.querySelectorAll(".step").forEach(function (step) {
-    trackCursor(step, "--mx", "--my");
+  document.querySelectorAll(".step, .stat").forEach(function (card) {
+    trackCursor(card, "--mx", "--my");
   });
 })();
