@@ -616,7 +616,28 @@ body.is-locked {
 /* ---------- Idea section ------------------------------------------------ */
 
 .idea {
+  position: relative;
+  overflow: hidden;
   text-align: center;
+}
+
+/* A soft glow that follows the cursor (assets/js/spotlight.js sets --spot-x/y).
+   Static and centered until JS moves it; invisible on touch devices, which
+   never fire mousemove. */
+.idea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+    rgba(255, 255, 255, 0.07),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.idea > * {
+  position: relative;
 }
 
 .idea__headline {
@@ -636,6 +657,49 @@ body.is-locked {
 
 .idea__actions {
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+/* ---------- Marquee ------------------------------------------------------ */
+
+.marquee {
+  overflow: hidden;
+  background: var(--black);
+  padding: clamp(1rem, 2.5vw, 1.5rem) 0;
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+
+.marquee__seg {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.marquee__word {
+  font-size: clamp(1.1rem, 2.6vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  white-space: nowrap;
+  padding: 0 clamp(1rem, 2vw, 1.5rem);
+}
+
+.marquee__dot {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* ---------- Movement section -------------------------------------------- */
@@ -699,9 +763,42 @@ body.is-locked {
 
 .steps {
   display: grid;
-  gap: clamp(3rem, 7vw, 5rem);
+  gap: clamp(1.5rem, 3vw, 2rem);
   margin-top: clamp(3.5rem, 7vw, 5.5rem);
   grid-template-columns: repeat(3, 1fr);
+}
+
+.step {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.75rem, 3vw, 2.25rem) clamp(1.5rem, 2.5vw, 1.75rem) clamp(2rem, 3vw, 2.25rem);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition: border-color 0.4s var(--ease);
+}
+
+.step:hover {
+  border-color: var(--ink);
+}
+
+/* Per-card cursor glow (assets/js/spotlight.js sets --mx/--my), same idea
+   as .idea's, just quieter — a hint, not a light show. */
+.step::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(0, 0, 0, 0.05), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+}
+
+.step:hover::before {
+  opacity: 1;
+}
+
+.step > * {
+  position: relative;
 }
 
 .step__num {
@@ -1601,8 +1698,14 @@ body.is-locked {
   }
 
   .step {
-    padding-top: 1.75rem;
+    padding: 1.75rem 0 0;
+    border: none;
     border-top: 1px solid var(--line);
+    border-radius: 0;
+  }
+
+  .step::before {
+    display: none;
   }
 
   .stat-row {

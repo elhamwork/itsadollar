@@ -12,6 +12,24 @@
     });
   }
 
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function countUp(el, target, format) {
+    if (reduceMotion) {
+      el.textContent = format(target);
+      return;
+    }
+    var start = performance.now();
+    var duration = 900;
+    function tick(now) {
+      var progress = Math.min(1, (now - start) / duration);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = format(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
   if (membersEl || leaderboardSection) {
     fetch("/api/vote?action=stats")
       .then(function (res) { return res.ok ? res.json() : null; })
@@ -19,7 +37,7 @@
         if (!data) return;
 
         if (membersEl && data.memberCount) {
-          membersEl.textContent = data.memberCount.toLocaleString();
+          countUp(membersEl, data.memberCount, function (n) { return n.toLocaleString(); });
         }
 
         if (leaderboardSection && leaderboardList && data.topReferrers && data.topReferrers.length > 0) {
@@ -49,7 +67,9 @@
       .then(function (data) {
         if (!data || !data.donations) return;
         var totalCents = data.donations.reduce(function (sum, d) { return sum + d.amount_cents; }, 0);
-        raisedEl.textContent = "$" + (totalCents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 });
+        countUp(raisedEl, Math.round(totalCents / 100), function (n) {
+          return "$" + n.toLocaleString(undefined, { minimumFractionDigits: 0 });
+        });
       })
       .catch(function () {
         /* Stays as the em dash placeholder already in the markup. */
